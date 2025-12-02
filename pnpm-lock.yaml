@@ -5,7 +5,12 @@ settings:
   excludeLinksFromLockfile: false
 
 importers:
+
   .:
+    dependencies:
+      '@bjorn3/browser_wasi_shim':
+        specifier: ^0.4.2
+        version: 0.4.2
     devDependencies:
       '@playwright/test':
         specifier: ^1.57.0
@@ -27,6 +32,10 @@ importers:
         version: 5.9.3
 
 packages:
+
+  '@bjorn3/browser_wasi_shim@0.4.2':
+    resolution: {integrity: sha512-/iHkCVUG3VbcbmEHn5iIUpIrh7a7WPiwZ3sHy4HZKZzBdSadwdddYDZAII2zBvQYV0Lfi8naZngPCN7WPHI/hA==}
+
   '@playwright/test@1.57.0':
     resolution: {integrity: sha512-6TyEnHgd6SArQO8UO2OMTxshln3QMWBtPGrOCgs3wVEmQmwyuNtB10IZMfmYDE0riwNR1cu4q+pPcxMVtaG3TA==}
     engines: {node: '>=18'}
@@ -67,6 +76,9 @@ packages:
     hasBin: true
 
 snapshots:
+
+  '@bjorn3/browser_wasi_shim@0.4.2': {}
+
   '@playwright/test@1.57.0':
     dependencies:
       playwright: 1.57.0
