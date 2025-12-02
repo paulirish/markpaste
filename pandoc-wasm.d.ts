@@ -1,4 +1,4 @@
-interface PandocWasmExports extends WebAssembly.Exports {
+export interface PandocWasmExports extends WebAssembly.Exports {
   __wasm_call_ctors: () => void;
   memory: WebAssembly.Memory;
   malloc: (size: number) => number;
@@ -6,6 +6,6 @@ interface PandocWasmExports extends WebAssembly.Exports {
   wasm_main: (args_ptr: number, args_len: number) => void;
 }
 
-interface PandocWasmInstance extends WebAssembly.Instance {
+export interface PandocWasmInstance extends WebAssembly.Instance {
   exports: PandocWasmExports;
 }

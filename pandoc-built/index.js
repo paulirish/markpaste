@@ -1,3 +1,7 @@
+
+/** @import * as PandocWasm from '../pandoc-wasm.js' */
+
+
 import {WASI, OpenFile, File, ConsoleStdout, PreopenDirectory} from 'https://cdn.jsdelivr.net/npm/@bjorn3/browser_wasi_shim@0.3.0/dist/index.js';
 
 const args = ['pandoc.wasm', '+RTS', '-H64m', '-RTS'];
@@ -16,10 +20,10 @@ const fds = [
 const options = {debug: false};
 const wasi = new WASI(args, env, fds, options);
 
-/** @type {PandocWasmInstance} */
-const {instance} = await WebAssembly.instantiateStreaming(fetch('/pandoc-built/pandoc.wasm'), {
+const source = await WebAssembly.instantiateStreaming(fetch('/pandoc-built/pandoc.wasm'), {
   wasi_snapshot_preview1: wasi.wasiImport,
 });
+const instance = /** @type {PandocWasm.PandocWasmInstance} */ (source.instance);
 
 wasi.initialize(instance);
 instance.exports.__wasm_call_ctors();
