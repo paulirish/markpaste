@@ -4,7 +4,6 @@
  * Uses TurndownService (loaded via CDN in index.html).
  */
 
-
 export function convertToMarkdown(html) {
   if (!window.TurndownService) {
     return 'Error: TurndownService not loaded.';

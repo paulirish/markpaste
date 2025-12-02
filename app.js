@@ -1,7 +1,6 @@
 import {cleanHTML} from './cleaner.js';
 import {convertToMarkdown} from './converter.js';
 
-
 const inputArea = document.getElementById('input-area');
 const outputPre = document.getElementById('output-pre');
 const outputCode = document.getElementById('output-code');

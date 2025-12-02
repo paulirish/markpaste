@@ -13,4 +13,3 @@
   },
   "include": ["**/*.js", "globals.d.ts"]
 }
-
