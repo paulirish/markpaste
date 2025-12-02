@@ -233,6 +233,29 @@ main {
     color: var(--text-color);
     outline: none;
     overflow-y: auto;
+    margin: 0; /* Override user agent styles for pre */
+    white-space: pre-wrap; /* Wrap text in pre */
+}
+
+/* Prism Overrides */
+pre[class*="language-"] {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    text-shadow: none !important;
+    font-family: var(--font-mono) !important;
+}
+
+code[class*="language-"],
+pre[class*="language-"] {
+    color: var(--text-color) !important;
+    font-size: 0.9rem !important;
+}
+
+/* Ensure code wraps */
+code[class*="language-"] {
+    white-space: pre-wrap !important;
+    word-break: break-word;
 }
 
 #input-area[contenteditable]:empty:before {

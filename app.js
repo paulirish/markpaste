@@ -3,8 +3,10 @@ import { convertToMarkdown } from './converter.js';
 
 // DOM Elements
 const inputArea = document.getElementById('input-area');
-const outputArea = document.getElementById('output-area');
+const outputPre = document.getElementById('output-pre');
+const outputCode = document.getElementById('output-code');
 const htmlPreview = document.getElementById('html-preview');
+const htmlCode = document.getElementById('html-code');
 const clearBtn = document.getElementById('clear-btn');
 const copyBtn = document.getElementById('copy-btn');
 const themeToggle = document.getElementById('theme-toggle');
@@ -31,8 +33,8 @@ function setupEventListeners() {
     // Clear Button
     clearBtn.addEventListener('click', () => {
         inputArea.innerHTML = '';
-        outputArea.value = '';
-        htmlPreview.textContent = '';
+        outputCode.textContent = '';
+        htmlCode.textContent = '';
     });
 
     // Copy Button
@@ -63,36 +65,44 @@ function handlePaste(e) {
     // Prefer HTML if available, otherwise text
     const content = pastedHtml || pastedText;
 
-    // Insert into input area (sanitized/cleaned version will be processed)
-    // We insert the raw HTML first to let the user see what they pasted, 
-    // but we might want to clean it immediately. 
-    // Let's clean it immediately for the input view to match "paste-html-subset" behavior.
+    // Process content immediately
+    processContent(content);
     
-    const cleaned = cleanHTML(content);
-    document.execCommand('insertHTML', false, cleaned);
+    // Reset input area to empty state
+    inputArea.innerHTML = '';
     
-    // Trigger processing
-    processContent(inputArea.innerHTML);
+    // Optional: Show a temporary "Pasted!" message or visual cue in the input area
+    inputArea.setAttribute('placeholder', 'Pasted! Ready for more...');
+    setTimeout(() => {
+        inputArea.setAttribute('placeholder', 'Paste your rich text here...');
+    }, 2000);
 }
 
 function processContent(html) {
-    // 1. Clean HTML (already done on paste, but good to ensure consistency)
+    // 1. Clean HTML
     const cleaned = cleanHTML(html);
     
     // 2. Convert to Markdown
     const markdown = convertToMarkdown(cleaned);
 
     // 3. Update Outputs
-    outputArea.value = markdown;
-    htmlPreview.textContent = formatHTML(cleaned);
+    // Escape HTML for display in code blocks
+    outputCode.textContent = markdown;
+    htmlCode.textContent = formatHTML(cleaned);
+
+    // 4. Highlight
+    if (window.Prism) {
+        Prism.highlightElement(outputCode);
+        Prism.highlightElement(htmlCode);
+    }
 }
 
 function updateOutputView() {
     if (currentView === 'markdown') {
-        outputArea.classList.remove('hidden');
+        outputPre.classList.remove('hidden');
         htmlPreview.classList.add('hidden');
     } else {
-        outputArea.classList.add('hidden');
+        outputPre.classList.add('hidden');
         htmlPreview.classList.remove('hidden');
     }
 }
@@ -131,7 +141,7 @@ function formatHTML(html) {
 }
 
 async function copyToClipboard() {
-    const textToCopy = currentView === 'markdown' ? outputArea.value : htmlPreview.textContent;
+    const textToCopy = currentView === 'markdown' ? outputCode.textContent : htmlCode.textContent;
     
     try {
         await navigator.clipboard.writeText(textToCopy);

@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MarkPaste - Rich Text to Markdown</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -57,15 +58,15 @@
 
             <div class="panel output-panel">
                 <div class="panel-header">
-                    <h2>Markdown</h2>
+                    <h2>Output</h2>
                     <div class="toggle-group">
                         <button class="toggle-btn active" data-view="markdown">Markdown</button>
                         <button class="toggle-btn" data-view="html">Clean HTML</button>
                     </div>
                 </div>
-                <div class="editor-container">
-                    <textarea id="output-area" class="editor" readonly placeholder="Markdown output will appear here..."></textarea>
-                    <pre id="html-preview" class="editor hidden"></pre>
+                <div class="editor-container output-container">
+                    <pre id="output-pre" class="editor"><code id="output-code" class="language-markdown"></code></pre>
+                    <pre id="html-preview" class="editor hidden"><code id="html-code" class="language-html"></code></pre>
                 </div>
                 <div class="panel-actions">
                     <button id="copy-btn" class="btn primary">
@@ -84,6 +85,8 @@
     <!-- Scripts -->
     <script src="https://unpkg.com/turndown/dist/turndown.js"></script>
     <script src="https://unpkg.com/turndown-plugin-gfm/dist/turndown-plugin-gfm.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
     <script type="module" src="app.js"></script>
 </body>
 </html>
