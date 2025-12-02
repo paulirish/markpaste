@@ -1,6 +1,5 @@
 import {cleanHTML} from './cleaner.js';
 
-
 /* bling.js + guaranteed and typed. Brand new in Nov 2025. */
 /**
  * Guaranteed context.querySelector. Always returns an element or throws if nothing matches query.
@@ -36,7 +35,6 @@ NodeList.prototype.on = function (name, fn) {
 
 const {$} = window;
 const {$$} = window;
-
 
 const inputArea = $('div#inputArea');
 const outputCode = $('code#outputCode');
