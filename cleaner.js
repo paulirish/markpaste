@@ -39,7 +39,7 @@ function processNode(sourceNode, targetParent) {
 
     // Handle element nodes
     if (sourceNode.nodeType === Node.ELEMENT_NODE) {
-        const tagName = sourceNode.tagName;
+        const tagName = sourceNode.tagName.toUpperCase();
 
         if (ALLOWED_TAGS.includes(tagName)) {
             const newElement = document.createElement(tagName);
@@ -60,12 +60,20 @@ function processNode(sourceNode, targetParent) {
                 processNode(child, newElement);
             });
         } else {
-            // If tag is not allowed, unwrap it (process children and append to current parent)
-            // Special case: if it's a block element being unwrapped into an inline context, 
-            // we might want to add a space or break, but for now simple unwrapping.
-            Array.from(sourceNode.childNodes).forEach(child => {
-                processNode(child, targetParent);
-            });
+            // If tag is not allowed, check if we should unwrap it or drop it.
+            // For safety, we should drop dangerous tags like SCRIPT, STYLE, IFRAME, OBJECT, EMBED, etc.
+            // But for "paste-html-subset" behavior, we usually unwrap structural tags (div, span) 
+            // and drop dangerous ones.
+            
+            const DANGEROUS_TAGS = ['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'LINK', 'META'];
+            
+            if (!DANGEROUS_TAGS.includes(tagName)) {
+                // Unwrap safe-ish tags (like div, span)
+                Array.from(sourceNode.childNodes).forEach(child => {
+                    processNode(child, targetParent);
+                });
+            }
+            // If dangerous, do nothing (drop it and its children)
         }
     }
 }

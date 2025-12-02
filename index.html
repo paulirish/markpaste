@@ -36,43 +36,38 @@
             </div>
         </header>
 
-        <main>
-            <div class="panel input-panel">
-                <div class="panel-header">
-                    <h2>Input</h2>
-                    <span class="badge">Paste HTML here</span>
-                </div>
-                <div class="editor-container">
-                    <div id="input-area" contenteditable="true" class="editor" placeholder="Paste your rich text here..."></div>
-                </div>
-                <div class="panel-actions">
-                    <button id="clear-btn" class="btn secondary">Clear</button>
-                </div>
-            </div>
-
-            <div class="arrow-divider">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                </svg>
-            </div>
-
-            <div class="panel output-panel">
-                <div class="panel-header">
-                    <h2>Output</h2>
-                    <div class="toggle-group">
-                        <button class="toggle-btn active" data-view="markdown">Markdown</button>
-                        <button class="toggle-btn" data-view="html">Clean HTML</button>
+        <main class="two-column-layout">
+            <div class="column left-column">
+                <div class="panel input-panel">
+                    <div class="editor-container">
+                        <div id="input-area" contenteditable="true" class="editor" placeholder="Paste your rich text here..."></div>
                     </div>
                 </div>
-                <div class="editor-container output-container">
-                    <pre id="output-pre" class="editor"><code id="output-code" class="language-markdown"></code></pre>
-                    <pre id="html-preview" class="editor hidden"><code id="html-code" class="language-html"></code></pre>
+
+                <div class="panel html-panel">
+                    <div class="panel-controls">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="clean-html-toggle" checked>
+                            Clean HTML
+                        </label>
+                    </div>
+                    <div class="editor-container">
+                        <pre id="html-preview" class="editor"><code id="html-code" class="language-html"></code></pre>
+                    </div>
                 </div>
-                <div class="panel-actions">
-                    <button id="copy-btn" class="btn primary">
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                        Copy to Clipboard
-                    </button>
+            </div>
+
+            <div class="column right-column">
+                <div class="panel output-panel">
+                    <div class="editor-container output-container">
+                        <pre id="output-pre" class="editor"><code id="output-code" class="language-markdown"></code></pre>
+                    </div>
+                    <div class="panel-actions">
+                        <button id="copy-btn" class="btn primary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                            Copy to Clipboard
+                        </button>
+                    </div>
                 </div>
             </div>
         </main>

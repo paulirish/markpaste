@@ -7,13 +7,12 @@ const outputPre = document.getElementById('output-pre');
 const outputCode = document.getElementById('output-code');
 const htmlPreview = document.getElementById('html-preview');
 const htmlCode = document.getElementById('html-code');
-const clearBtn = document.getElementById('clear-btn');
 const copyBtn = document.getElementById('copy-btn');
 const themeToggle = document.getElementById('theme-toggle');
-const toggleBtns = document.querySelectorAll('.toggle-btn');
+const cleanHtmlToggle = document.getElementById('clean-html-toggle');
 
 // State
-let currentView = 'markdown'; // 'markdown' or 'html'
+let lastProcessedContent = '';
 
 // Initialize
 function init() {
@@ -27,14 +26,9 @@ function setupEventListeners() {
     
     // Input Input (for manual typing/editing)
     inputArea.addEventListener('input', () => {
+        // For manual input, we treat it as the content to process
+        // But we don't clear it like paste
         processContent(inputArea.innerHTML);
-    });
-
-    // Clear Button
-    clearBtn.addEventListener('click', () => {
-        inputArea.innerHTML = '';
-        outputCode.textContent = '';
-        htmlCode.textContent = '';
     });
 
     // Copy Button
@@ -42,15 +36,13 @@ function setupEventListeners() {
 
     // Theme Toggle
     themeToggle.addEventListener('click', toggleTheme);
-
-    // View Toggles
-    toggleBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            toggleBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentView = btn.dataset.view;
-            updateOutputView();
-        });
+    
+    // Clean HTML Toggle
+    cleanHtmlToggle.addEventListener('change', () => {
+        // Re-process the last content to update the view
+        if (lastProcessedContent) {
+            processContent(lastProcessedContent);
+        }
     });
 }
 
@@ -64,6 +56,9 @@ function handlePaste(e) {
 
     // Prefer HTML if available, otherwise text
     const content = pastedHtml || pastedText;
+
+    // Store for re-processing (e.g. toggle change)
+    lastProcessedContent = content;
 
     // Process content immediately
     processContent(content);
@@ -82,13 +77,18 @@ function processContent(html) {
     // 1. Clean HTML
     const cleaned = cleanHTML(html);
     
-    // 2. Convert to Markdown
+    // 2. Convert to Markdown (Always use cleaned HTML for markdown conversion as per app purpose)
     const markdown = convertToMarkdown(cleaned);
 
     // 3. Update Outputs
-    // Escape HTML for display in code blocks
     outputCode.textContent = markdown;
-    htmlCode.textContent = formatHTML(cleaned);
+    
+    // HTML Preview: Show cleaned or raw based on toggle
+    if (cleanHtmlToggle.checked) {
+        htmlCode.textContent = formatHTML(cleaned);
+    } else {
+        htmlCode.textContent = formatHTML(html);
+    }
 
     // 4. Highlight
     if (window.Prism) {
@@ -97,18 +97,10 @@ function processContent(html) {
     }
 }
 
-function updateOutputView() {
-    if (currentView === 'markdown') {
-        outputPre.classList.remove('hidden');
-        htmlPreview.classList.add('hidden');
-    } else {
-        outputPre.classList.add('hidden');
-        htmlPreview.classList.remove('hidden');
-    }
-}
-
 function formatHTML(html) {
     // Simple formatter for the HTML preview
+    if (!html) return '';
+    
     let formatted = '';
     const reg = /(>)(<)(\/*)/g;
     const xml = html.replace(reg, '$1\r\n$2$3');
@@ -141,7 +133,7 @@ function formatHTML(html) {
 }
 
 async function copyToClipboard() {
-    const textToCopy = currentView === 'markdown' ? outputCode.textContent : htmlCode.textContent;
+    const textToCopy = outputCode.textContent;
     
     try {
         await navigator.clipboard.writeText(textToCopy);
@@ -162,8 +154,15 @@ async function copyToClipboard() {
 
 // Theme Management
 function loadTheme() {
-    const savedTheme = localStorage.getItem('theme') || 'dark';
-    document.documentElement.setAttribute('data-theme', savedTheme);
+    const savedTheme = localStorage.getItem('theme');
+    
+    if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    } else {
+        // Check system preference
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+    }
 }
 
 function toggleTheme() {
