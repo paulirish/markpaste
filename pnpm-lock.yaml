@@ -5,11 +5,18 @@ settings:
   excludeLinksFromLockfile: false
 
 importers:
+
   .:
     devDependencies:
       '@playwright/test':
         specifier: ^1.57.0
         version: 1.57.0
+      '@types/prismjs':
+        specifier: ^1.26.5
+        version: 1.26.5
+      '@types/turndown':
+        specifier: ^5.0.6
+        version: 5.0.6
       prettier:
         specifier: ^3.7.3
         version: 3.7.3
@@ -18,10 +25,17 @@ importers:
         version: 5.9.3
 
 packages:
+
   '@playwright/test@1.57.0':
     resolution: {integrity: sha512-6TyEnHgd6SArQO8UO2OMTxshln3QMWBtPGrOCgs3wVEmQmwyuNtB10IZMfmYDE0riwNR1cu4q+pPcxMVtaG3TA==}
     engines: {node: '>=18'}
     hasBin: true
+
+  '@types/prismjs@1.26.5':
+    resolution: {integrity: sha512-AUZTa7hQ2KY5L7AmtSiqxlhWxb4ina0yd8hNbl4TWuqnv/pFP0nDMb3YrfSBf4hJVGLh2YEIBfKaBW/9UEl6IQ==}
+
+  '@types/turndown@5.0.6':
+    resolution: {integrity: sha512-ru00MoyeeouE5BX4gRL+6m/BsDfbRayOskWqUvh7CLGW+UXxHQItqALa38kKnOiZPqJrtzJUgAC2+F0rL1S4Pg==}
 
   fsevents@2.3.2:
     resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
@@ -49,9 +63,14 @@ packages:
     hasBin: true
 
 snapshots:
+
   '@playwright/test@1.57.0':
     dependencies:
       playwright: 1.57.0
+
+  '@types/prismjs@1.26.5': {}
+
+  '@types/turndown@5.0.6': {}
 
   fsevents@2.3.2:
     optional: true
