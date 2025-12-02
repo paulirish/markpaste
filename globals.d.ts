@@ -28,4 +28,3 @@ declare global {
     on(name: string, fn: EventListenerOrEventListenerObject): void;
   }
 }
-

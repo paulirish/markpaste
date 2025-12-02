@@ -24,25 +24,25 @@ To run MarkPaste locally, follow these steps:
 
 1. **Clone the repository:**
 
-    ```bash
-    git clone https://github.com/your-username/markpaste.git
-    cd markpaste
-    ```
+   ```bash
+   git clone https://github.com/your-username/markpaste.git
+   cd markpaste
+   ```
 
 2. **Install dependencies:**
-    This project uses `pnpm` as the package manager.
+   This project uses `pnpm` as the package manager.
 
-    ```bash
-    pnpm install
-    ```
+   ```bash
+   pnpm install
+   ```
 
 3. **Start the development server:**
 
-    ```bash
-    pnpm start
-    ```
+   ```bash
+   pnpm start
+   ```
 
-    This will start a local server, and you can access the application at `http://localhost:7025`.
+   This will start a local server, and you can access the application at `http://localhost:7025`.
 
 ### Testing
 

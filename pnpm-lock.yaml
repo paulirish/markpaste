@@ -5,7 +5,6 @@ settings:
   excludeLinksFromLockfile: false
 
 importers:
-
   .:
     devDependencies:
       '@playwright/test':
@@ -28,7 +27,6 @@ importers:
         version: 5.9.3
 
 packages:
-
   '@playwright/test@1.57.0':
     resolution: {integrity: sha512-6TyEnHgd6SArQO8UO2OMTxshln3QMWBtPGrOCgs3wVEmQmwyuNtB10IZMfmYDE0riwNR1cu4q+pPcxMVtaG3TA==}
     engines: {node: '>=18'}
@@ -69,7 +67,6 @@ packages:
     hasBin: true
 
 snapshots:
-
   '@playwright/test@1.57.0':
     dependencies:
       playwright: 1.57.0

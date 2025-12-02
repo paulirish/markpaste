@@ -1,3 +1,6 @@
+import {cleanHTML} from './cleaner.js';
+
+
 /* bling.js + guaranteed and typed. Brand new in Nov 2025. */
 /**
  * Guaranteed context.querySelector. Always returns an element or throws if nothing matches query.
@@ -21,26 +24,27 @@ window.$ = function (query, context) {
  */
 window.$$ = (query, context) => (context || document).querySelectorAll(query);
 
-Node.prototype.on = window.on = function (name, fn) { this.addEventListener(name, fn); };
+Node.prototype.on = window.on = function (name, fn) {
+  this.addEventListener(name, fn);
+};
 // @ts-ignore
 NodeList.prototype.__proto__ = Array.prototype;
-NodeList.prototype.on = function (name, fn) { this.forEach(elem => elem.on(name, fn)); };
+NodeList.prototype.on = function (name, fn) {
+  this.forEach(elem => elem.on(name, fn));
+};
 // Bling'ed out.
-
 
 const {$} = window;
 const {$$} = window;
-import {cleanHTML} from './cleaner.js';
 
-const inputArea = $('#inputArea');
-const outputPre = $('#outputPre');
-const outputCode = $('#outputCode');
-const htmlPreview = $('#htmlPreview');
-const htmlCode = $('#htmlCode');
-const copyBtn = $('#copyBtn');
-const themeToggle = $('#themeToggle');
-const cleanHtmlToggle = /** @type {HTMLInputElement} */ ($('#cleanHtmlToggle'));
-const converterSelector = $('#converterSelector');
+
+const inputArea = $('div#inputArea');
+const outputCode = $('code#outputCode');
+const htmlCode = $('code#htmlCode');
+const copyBtn = $('button#copyBtn');
+const themeToggle = $('button#themeToggle');
+const cleanHtmlToggle = $('input#cleanHtmlToggle');
+const converterSelector = $('fieldset#converterSelector');
 
 let lastProcessedContent = '';
 let converter;
@@ -72,7 +76,7 @@ function setupEventListeners() {
 
   converterSelector.on('change', async () => {
     await updateConverter();
-    inputArea.dispatchEvent(new Event('input', {bubbles: true}));
+    processContent(lastProcessedContent);
   });
 
   // Add a keydown event listener for scoped select all
