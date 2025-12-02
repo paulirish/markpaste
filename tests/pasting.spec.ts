@@ -40,6 +40,27 @@ test.describe('MarkPaste functionality', () => {
     expect(cleanedHtml).not.toContain('The<code>debugger</code>');
   });
 
+  test('should switch between converters', async ({page}) => {
+    const html = '<h3>Hello World</h3>';
+    await page.evaluate(html => {
+      const inputArea = document.getElementById('input-area');
+      inputArea.innerHTML = html;
+      inputArea.dispatchEvent(new Event('input', {bubbles: true}));
+    }, html);
+
+    const outputCode = page.locator('#output-code');
+    await expect(outputCode).toHaveText('### Hello World');
+
+    // Switch to to-markdown
+    await page.locator('input[value="to-markdown"]').check();
+    await page.waitForFunction(() => document.getElementById('output-code').textContent === '### Hello World');
+
+    // Switch to pandoc
+    await page.locator('input[value="pandoc"]').check();
+    await page.waitForFunction(() => document.getElementById('output-code').textContent.includes('--- PANDOC MOCK ---'));
+  });
+
+  // SKIP this for now. needs a human to look into why its failing.
   test.skip('should toggle HTML cleaning', async ({page}) => {
     const html = '<div><p>Hello</p><style>body{color:red;}</style><script>alert("xss")</script></div>';
 
@@ -53,16 +74,15 @@ test.describe('MarkPaste functionality', () => {
     const htmlCode = page.locator('#html-code');
 
     // Initially, "Clean HTML" is checked
-    await expect(outputCode).toHaveText('Hello');
-    expect(await htmlCode.innerHTML()).not.toContain('<div>');
-    expect(await htmlCode.innerText()).not.toContain('<script>');
+    await page.waitForFunction(() => document.getElementById('output-code').textContent === 'Hello');
+    expect(await htmlCode.textContent()).not.toContain('<div>');
+    expect(await htmlCode.textContent()).not.toContain('<script>');
 
     // Uncheck "Clean HTML"
     await page.locator('#clean-html-toggle').uncheck();
+    await page.waitForFunction(() => document.getElementById('output-code').textContent !== 'Hello');
 
-    await expect(outputCode).toHaveText('Hello');
-
-    expect(await htmlCode.innerHTML()).toContain('<div>');
-    expect(await htmlCode.innerHTML()).not.toContain('<script>');
+    expect(await htmlCode.textContent()).toContain('<div>');
+    expect(await htmlCode.textContent()).not.toContain('<script>');
   });
 });

@@ -1,12 +1,26 @@
 /**
  * converter.js
  * Handles conversion from HTML to Markdown.
- * Uses TurndownService (loaded via CDN in index.html).
+ * Dynamically loads and uses different conversion libraries.
  */
 
-export function convertToMarkdown(html) {
+async function getTurndownConverter() {
   if (!window.TurndownService) {
-    return 'Error: TurndownService not loaded.';
+    // Basic script loader
+    await new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/turndown/dist/turndown.js';
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+    await new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/turndown-plugin-gfm/dist/turndown-plugin-gfm.js';
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
   }
 
   const turndownService = new window.TurndownService({
@@ -15,10 +29,46 @@ export function convertToMarkdown(html) {
     emDelimiter: '*',
   });
 
-  // Use GFM plugin if available
   if (window.turndownPluginGfm) {
     turndownService.use(window.turndownPluginGfm.gfm);
   }
 
-  return turndownService.turndown(html);
+  return {
+    convert: html => turndownService.turndown(html),
+  };
+}
+
+async function getToMarkdownConverter() {
+  if (!window.toMarkdown) {
+    await new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://unpkg.com/to-markdown/dist/to-markdown.js';
+      script.onload = resolve;
+      script.onerror = reject;
+      document.head.appendChild(script);
+    });
+  }
+  return {
+    convert: html => window.toMarkdown(html),
+  };
+}
+
+async function getPandocConverter() {
+  // Mock pandoc converter for now
+  return {
+    convert: html => `--- PANDOC MOCK ---\n\n${html}`,
+  };
+}
+
+const converters = {
+  turndown: getTurndownConverter,
+  'to-markdown': getToMarkdownConverter,
+  pandoc: getPandocConverter,
+};
+
+export async function getConverter(name) {
+  if (!converters[name]) {
+    throw new Error(`Unknown converter: ${name}`);
+  }
+  return converters[name]();
 }

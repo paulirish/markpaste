@@ -94,6 +94,13 @@
       </main>
 
       <footer>
+        <div class="panel-controls">
+          <div class="radio-group" id="converter-selector">
+            <label><input type="radio" name="converter" value="turndown" checked> Turndown</label>
+            <label><input type="radio" name="converter" value="to-markdown"> to-markdown</label>
+            <label><input type="radio" name="converter" value="pandoc"> Pandoc</label>
+          </div>
+        </div>
         <p>
           Powered by <a href="https://github.com/mixmark-io/turndown" target="_blank">Turndown</a> & <a href="https://pandoc.org/" target="_blank">Pandoc</a>
         </p>
@@ -101,8 +108,6 @@
     </div>
 
     <!-- Scripts -->
-    <script src="https://unpkg.com/turndown/dist/turndown.js"></script>
-    <script src="https://unpkg.com/turndown-plugin-gfm/dist/turndown-plugin-gfm.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
     <script type="module" src="app.js"></script>

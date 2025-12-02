@@ -1,5 +1,4 @@
 import {cleanHTML} from './cleaner.js';
-import {convertToMarkdown} from './converter.js';
 
 const inputArea = document.getElementById('input-area');
 const outputPre = document.getElementById('output-pre');
@@ -9,19 +8,24 @@ const htmlCode = document.getElementById('html-code');
 const copyBtn = document.getElementById('copy-btn');
 const themeToggle = document.getElementById('theme-toggle');
 const cleanHtmlToggle = /** @type {HTMLInputElement} */ (document.getElementById('clean-html-toggle'));
+const converterSelector = document.getElementById('converter-selector');
 
 let lastProcessedContent = '';
+let converter;
 
-function init() {
+async function init() {
   setupEventListeners();
   loadTheme();
+  await updateConverter();
+  processContent(inputArea.innerHTML);
 }
 
 function setupEventListeners() {
   inputArea.addEventListener('paste', handlePaste);
 
   inputArea.addEventListener('input', () => {
-    processContent(inputArea.innerHTML);
+    lastProcessedContent = inputArea.innerHTML;
+    processContent(lastProcessedContent);
   });
 
   copyBtn.addEventListener('click', copyToClipboard);
@@ -34,8 +38,19 @@ function setupEventListeners() {
     }
   });
 
+  converterSelector.addEventListener('change', async () => {
+    await updateConverter();
+    inputArea.dispatchEvent(new Event('input', {bubbles: true}));
+  });
+
   // Add a keydown event listener for scoped select all
   document.addEventListener('keydown', handleSelectAll);
+}
+
+async function updateConverter() {
+  const selectedConverter = document.querySelector('input[name="converter"]:checked').value;
+  const {getConverter} = await import('./converter.js');
+  converter = await getConverter(selectedConverter);
 }
 
 function handleSelectAll(e) {
@@ -76,17 +91,15 @@ function handlePaste(e) {
 }
 
 function processContent(html) {
-  const cleaned = cleanHTML(html);
+  const selectedConverter = document.querySelector('input[name="converter"]:checked').value;
+  const shouldClean = cleanHtmlToggle.checked && selectedConverter !== 'pandoc';
 
-  const markdown = convertToMarkdown(cleanHtmlToggle.checked ? cleaned : html);
+  const contentToConvert = shouldClean ? cleanHTML(html) : html;
+  const markdown = converter.convert(contentToConvert);
 
   outputCode.textContent = markdown;
 
-  if (cleanHtmlToggle.checked) {
-    htmlCode.textContent = formatHTML(cleaned);
-  } else {
-    htmlCode.textContent = formatHTML(html);
-  }
+  htmlCode.textContent = formatHTML(contentToConvert);
 
   if (window.Prism) {
     window.Prism.highlightElement(outputCode);
