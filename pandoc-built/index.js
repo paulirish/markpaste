@@ -6,7 +6,6 @@ import * as WasiShim from 'https://cdn.jsdelivr.net/npm/@bjorn3/browser_wasi_shi
 /** @type {WasiShimT} */
 const {WASI, OpenFile, File, ConsoleStdout, PreopenDirectory} = WasiShim;
 
-
 const args = ['pandoc.wasm', '+RTS', '-H64m', '-RTS'];
 const env = [];
 const in_file = new File(new Uint8Array(), {readonly: true});
@@ -15,10 +14,13 @@ const fds = [
   new OpenFile(new File(new Uint8Array(), {readonly: true})),
   ConsoleStdout.lineBuffered(msg => console.log(`[WASI stdout] ${msg}`)),
   ConsoleStdout.lineBuffered(msg => console.warn(`[WASI stderr] ${msg}`)),
-  new PreopenDirectory('/', new Map([
-    ['in', in_file],
-    ['out', out_file],
-  ])),
+  new PreopenDirectory(
+    '/',
+    new Map([
+      ['in', in_file],
+      ['out', out_file],
+    ])
+  ),
 ];
 const options = {debug: false};
 const wasi = new WASI(args, env, fds, options);

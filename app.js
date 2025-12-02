@@ -190,7 +190,7 @@ async function copyToClipboard() {
 
     // Visual feedback
     const originalText = copyBtn.innerHTML;
-    copyBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!`;
+    copyBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Rich HTML and text Markdown both copied!`;
     copyBtn.classList.add('success');
 
     setTimeout(() => {
