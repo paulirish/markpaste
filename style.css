@@ -123,7 +123,7 @@ header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1.5rem 2rem;
+  padding: 1rem;
   border-bottom: var(--glass-border);
 }
 
@@ -398,14 +398,13 @@ code[class*='language-'] {
 
 /* Footer */
 footer {
-  padding: 1rem;
+  padding: 0 1rem;
   font-size: 0.8rem;
   color: var(--text-muted);
-  border-top: var(--glass-border);
   display: flex;
   justify-content: end;
   align-items: center;
-  gap: 2rem;
+  gap: 1rem;
 }
 
 footer a {
@@ -440,7 +439,6 @@ footer a:hover {
 
 .radio-group {
   display: flex;
-  gap: 1rem;
   font-size: 0.85rem;
   border: 0;
 }
@@ -450,4 +448,12 @@ footer a:hover {
   align-items: center;
   gap: 0.4rem;
   cursor: pointer;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.radio-group label:hover {
+  background: var(--secondary-bg);
+  color: var(--text-color);
 }
