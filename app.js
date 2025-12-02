@@ -1,56 +1,84 @@
+/* bling.js */
+window.$ = document.querySelector.bind(document);
+window.$$ = document.querySelectorAll.bind(document);
+Node.prototype.on = window.on = function (name, fn) {
+  this.addEventListener(name, fn);
+};
+NodeList.prototype.__proto__ = Array.prototype;
+NodeList.prototype.on = function (name, fn) {
+  this.forEach(elem => elem.on(name, fn));
+};
+
+/**
+ * Guaranteed context.querySelector. Always returns an element or throws if nothing matches query.
+ * @template {string} T
+ * @param {T} query
+ * @param {ParentNode=} context
+ * @return {import('typed-query-selector/parser').ParseSelector<T, Element>}
+ */
+globalThis.$ = function (query, context) {
+  const result = (context || document).querySelector(query);
+  if (result === null) {
+    throw new Error(`query ${query} not found`);
+  }
+  return /** @type {import('typed-query-selector/parser').ParseSelector<T, Element>} */ (result);
+};
+
 import {cleanHTML} from './cleaner.js';
 
-const inputArea = document.getElementById('input-area');
-const outputPre = document.getElementById('output-pre');
-const outputCode = document.getElementById('output-code');
-const htmlPreview = document.getElementById('html-preview');
-const htmlCode = document.getElementById('html-code');
-const copyBtn = document.getElementById('copy-btn');
-const themeToggle = document.getElementById('theme-toggle');
-const cleanHtmlToggle = /** @type {HTMLInputElement} */ (document.getElementById('clean-html-toggle'));
-const converterSelector = document.getElementById('converter-selector');
+const inputArea = $('#input-area');
+const outputPre = $('#output-pre');
+const outputCode = $('#output-code');
+const htmlPreview = $('#html-preview');
+const htmlCode = $('#html-code');
+const copyBtn = $('#copy-btn');
+const themeToggle = $('#theme-toggle');
+const cleanHtmlToggle = /** @type {HTMLInputElement} */ ($('#clean-html-toggle'));
+const converterSelector = $('#converter-selector');
 
 let lastProcessedContent = '';
 let converter;
+let currentConverterName = '';
 
 async function init() {
   setupEventListeners();
   loadTheme();
-  await updateConverter();
+  currentConverterName = await updateConverter();
   processContent(inputArea.innerHTML);
 }
 
 function setupEventListeners() {
-  inputArea.addEventListener('paste', handlePaste);
+  inputArea.on('paste', handlePaste);
 
-  inputArea.addEventListener('input', () => {
+  inputArea.on('input', () => {
     lastProcessedContent = inputArea.innerHTML;
     processContent(lastProcessedContent);
   });
 
-  copyBtn.addEventListener('click', copyToClipboard);
+  copyBtn.on('click', copyToClipboard);
 
-  themeToggle.addEventListener('click', toggleTheme);
+  themeToggle.on('click', toggleTheme);
 
-  cleanHtmlToggle.addEventListener('change', () => {
+  cleanHtmlToggle.on('change', () => {
     if (lastProcessedContent) {
       processContent(lastProcessedContent);
     }
   });
 
-  converterSelector.addEventListener('change', async () => {
-    await updateConverter();
+  converterSelector.on('change', async () => {
+    currentConverterName = await updateConverter();
     inputArea.dispatchEvent(new Event('input', {bubbles: true}));
   });
 
   // Add a keydown event listener for scoped select all
-  document.addEventListener('keydown', handleSelectAll);
+  document.on('keydown', handleSelectAll);
 }
 
 async function updateConverter() {
-  const selectedConverter = document.querySelector('input[name="converter"]:checked').value;
+  const selectedConverter = $('input[name="converter"]:checked').value;
   const {getConverter} = await import('./converter.js');
   converter = await getConverter(selectedConverter);
+  return selectedConverter;
 }
 
 function handleSelectAll(e) {
@@ -91,8 +119,7 @@ function handlePaste(e) {
 }
 
 function processContent(html) {
-  const selectedConverter = document.querySelector('input[name="converter"]:checked').value;
-  const shouldClean = cleanHtmlToggle.checked && selectedConverter !== 'pandoc';
+  const shouldClean = cleanHtmlToggle.checked && currentConverterName !== 'pandoc';
 
   const contentToConvert = shouldClean ? cleanHTML(html) : html;
   const markdown = converter.convert(contentToConvert);
