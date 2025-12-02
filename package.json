@@ -1,0 +1,14 @@
+{
+  "name": "markpaste",
+  "private": true,
+  "version": "0.0.1",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "start": "npx statikk --port 7025"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module"
+}
