@@ -13,25 +13,19 @@ window.$ = function (query, context) {
   }
   return /** @type {import('typed-query-selector/parser.js').ParseSelector<T, Element>} */ (result);
 };
-
 /**
  * @template {string} T
  * @param {T} query
  * @param {ParentNode=} context
  * @return {NodeListOf<import('typed-query-selector/parser.js').ParseSelector<T, Element>>}
  */
-window.$$ = function (query, context) {
-    return (context || document).querySelectorAll(query);
-};
-Node.prototype.on = window.on = function (name, fn) {
-  this.addEventListener(name, fn);
-};
+window.$$ = (query, context) => (context || document).querySelectorAll(query);
+
+Node.prototype.on = window.on = function (name, fn) { this.addEventListener(name, fn); };
 // @ts-ignore
 NodeList.prototype.__proto__ = Array.prototype;
-NodeList.prototype.on = function (name, fn) {
-  this.forEach(elem => elem.on(name, fn));
-};
-
+NodeList.prototype.on = function (name, fn) { this.forEach(elem => elem.on(name, fn)); };
+// Bling'ed out.
 
 
 const {$} = window;
