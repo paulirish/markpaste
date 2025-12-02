@@ -15,6 +15,8 @@ const fds = [
 ];
 const options = {debug: false};
 const wasi = new WASI(args, env, fds, options);
+
+/** @type {PandocWasmInstance} */
 const {instance} = await WebAssembly.instantiateStreaming(fetch('/pandoc-built/pandoc.wasm'), {
   wasi_snapshot_preview1: wasi.wasiImport,
 });

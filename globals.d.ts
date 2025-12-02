@@ -28,3 +28,4 @@ declare global {
     on(name: string, fn: EventListenerOrEventListenerObject): void;
   }
 }
+/// <reference path="pandoc-wasm.d.ts" />
