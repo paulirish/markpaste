@@ -74,23 +74,18 @@ function handlePaste(e) {
 }
 
 function processContent(html) {
-    // 1. Clean HTML
     const cleaned = cleanHTML(html);
     
-    // 2. Convert to Markdown (Always use cleaned HTML for markdown conversion as per app purpose)
-    const markdown = convertToMarkdown(cleaned);
+    const markdown = convertToMarkdown(cleanHtmlToggle.checked ? cleaned : html);
 
-    // 3. Update Outputs
     outputCode.textContent = markdown;
     
-    // HTML Preview: Show cleaned or raw based on toggle
     if (cleanHtmlToggle.checked) {
         htmlCode.textContent = formatHTML(cleaned);
     } else {
         htmlCode.textContent = formatHTML(html);
     }
 
-    // 4. Highlight
     if (window.Prism) {
         Prism.highlightElement(outputCode);
         Prism.highlightElement(htmlCode);
@@ -134,9 +129,15 @@ function formatHTML(html) {
 
 async function copyToClipboard() {
     const textToCopy = outputCode.textContent;
+    const htmlToCopy = htmlCode.textContent;
     
     try {
-        await navigator.clipboard.writeText(textToCopy);
+        const items = {
+            'text/plain': new Blob([textToCopy], { type: 'text/plain' }),
+            'text/html': new Blob([htmlToCopy], { type: 'text/html' }),
+        };
+        const cpItem = new ClipboardItem(items);  
+        await navigator.clipboard.write([cpItem]);
         
         // Visual feedback
         const originalText = copyBtn.innerHTML;
