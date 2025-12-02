@@ -32,15 +32,15 @@ const {$} = window;
 const {$$} = window;
 import {cleanHTML} from './cleaner.js';
 
-const inputArea = $('#input-area');
-const outputPre = $('#output-pre');
-const outputCode = $('#output-code');
-const htmlPreview = $('#html-preview');
-const htmlCode = $('#html-code');
-const copyBtn = $('#copy-btn');
-const themeToggle = $('#theme-toggle');
-const cleanHtmlToggle = /** @type {HTMLInputElement} */ ($('#clean-html-toggle'));
-const converterSelector = $('#converter-selector');
+const inputArea = $('#inputArea');
+const outputPre = $('#outputPre');
+const outputCode = $('#outputCode');
+const htmlPreview = $('#htmlPreview');
+const htmlCode = $('#htmlCode');
+const copyBtn = $('#copyBtn');
+const themeToggle = $('#themeToggle');
+const cleanHtmlToggle = /** @type {HTMLInputElement} */ ($('#cleanHtmlToggle'));
+const converterSelector = $('#converterSelector');
 
 let lastProcessedContent = '';
 let converter;
