@@ -8,9 +8,8 @@
     "start": "npx statikk --port 7025",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
-    "test": "npm run typecheck"
+    "test": "playwright test"
   },
-
   "packageManager": "pnpm@10.22.0",
   "engines": {
     "npm": "Please use pnpm instead of NPM to install dependencies",
@@ -22,6 +21,7 @@
   "license": "ISC",
   "type": "module",
   "devDependencies": {
+    "@playwright/test": "^1.57.0",
     "prettier": "^3.7.3",
     "typescript": "^5.9.3"
   }
