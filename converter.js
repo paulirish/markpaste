@@ -54,9 +54,12 @@ async function getToMarkdownConverter() {
 }
 
 async function getPandocConverter() {
-  // Mock pandoc converter for now
+  const pandocModule = await import('./pandoc-built/index.js');
   return {
-    convert: html => `--- PANDOC MOCK ---\n\n${html}`,
+    convert: html => {
+      const args = '-f html -t gfm';
+      return pandocModule.pandoc(args, html);
+    },
   };
 }
 
