@@ -1,6 +1,7 @@
 import {cleanHTML} from './cleaner.js';
 import {convertToMarkdown} from './converter.js';
 
+
 const inputArea = document.getElementById('input-area');
 const outputPre = document.getElementById('output-pre');
 const outputCode = document.getElementById('output-code');
@@ -8,7 +9,7 @@ const htmlPreview = document.getElementById('html-preview');
 const htmlCode = document.getElementById('html-code');
 const copyBtn = document.getElementById('copy-btn');
 const themeToggle = document.getElementById('theme-toggle');
-const cleanHtmlToggle = document.getElementById('clean-html-toggle');
+const cleanHtmlToggle = /** @type {HTMLInputElement} */ (document.getElementById('clean-html-toggle'));
 
 let lastProcessedContent = '';
 
@@ -66,8 +67,11 @@ function processContent(html) {
     htmlCode.textContent = formatHTML(html);
   }
 
+  // @ts-ignore
   if (window.Prism) {
+    // @ts-ignore
     Prism.highlightElement(outputCode);
+    // @ts-ignore
     Prism.highlightElement(htmlCode);
   }
 }

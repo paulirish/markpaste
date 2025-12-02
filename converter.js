@@ -4,11 +4,14 @@
  * Uses TurndownService (loaded via CDN in index.html).
  */
 
+
 export function convertToMarkdown(html) {
+  // @ts-ignore
   if (!window.TurndownService) {
     return 'Error: TurndownService not loaded.';
   }
 
+  // @ts-ignore
   const turndownService = new TurndownService({
     headingStyle: 'atx',
     codeBlockStyle: 'fenced',
@@ -16,7 +19,9 @@ export function convertToMarkdown(html) {
   });
 
   // Use GFM plugin if available
+  // @ts-ignore
   if (window.turndownPluginGfm) {
+    // @ts-ignore
     turndownService.use(window.turndownPluginGfm.gfm);
   }
 
