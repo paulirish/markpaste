@@ -67,12 +67,9 @@ function processContent(html) {
     htmlCode.textContent = formatHTML(html);
   }
 
-  // @ts-ignore
   if (window.Prism) {
-    // @ts-ignore
-    Prism.highlightElement(outputCode);
-    // @ts-ignore
-    Prism.highlightElement(htmlCode);
+    window.Prism.highlightElement(outputCode);
+    window.Prism.highlightElement(htmlCode);
   }
 }
 

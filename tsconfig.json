@@ -10,5 +10,7 @@
     "noEmit": true,
     "allowJs": true,
     "checkJs": true
-  }
+  },
+  "include": ["**/*.js", "globals.d.ts"]
 }
+
