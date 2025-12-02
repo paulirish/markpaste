@@ -5,20 +5,20 @@
  */
 
 export function convertToMarkdown(html) {
-    if (!window.TurndownService) {
-        return "Error: TurndownService not loaded.";
-    }
+  if (!window.TurndownService) {
+    return 'Error: TurndownService not loaded.';
+  }
 
-    const turndownService = new TurndownService({
-        headingStyle: 'atx',
-        codeBlockStyle: 'fenced',
-        emDelimiter: '*'
-    });
+  const turndownService = new TurndownService({
+    headingStyle: 'atx',
+    codeBlockStyle: 'fenced',
+    emDelimiter: '*',
+  });
 
-    // Use GFM plugin if available
-    if (window.turndownPluginGfm) {
-        turndownService.use(window.turndownPluginGfm.gfm);
-    }
+  // Use GFM plugin if available
+  if (window.turndownPluginGfm) {
+    turndownService.use(window.turndownPluginGfm.gfm);
+  }
 
-    return turndownService.turndown(html);
+  return turndownService.turndown(html);
 }
