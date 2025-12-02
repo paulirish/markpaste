@@ -128,7 +128,7 @@ function handlePaste(e) {
 
 function processContent(html) {
   const selectedConverter = $('input[name="converter"]:checked').value;
-  const shouldClean = cleanHtmlToggle.checked && selectedConverter !== 'pandoc';
+  const shouldClean = cleanHtmlToggle.checked;
 
   const contentToConvert = shouldClean ? cleanHTML(html) : html;
   const markdown = converter.convert(contentToConvert);
