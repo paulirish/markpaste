@@ -31,7 +31,7 @@ export function cleanHTML(html) {
 function processNode(sourceNode, targetParent) {
     // Handle text nodes
     if (sourceNode.nodeType === Node.TEXT_NODE) {
-        if (sourceNode.textContent.trim()) {
+        if (sourceNode.textContent.length > 0) {
             targetParent.appendChild(document.createTextNode(sourceNode.textContent));
         }
         return;
