@@ -1,7 +1,6 @@
 import { cleanHTML } from './cleaner.js';
 import { convertToMarkdown } from './converter.js';
 
-// DOM Elements
 const inputArea = document.getElementById('input-area');
 const outputPre = document.getElementById('output-pre');
 const outputCode = document.getElementById('output-code');
@@ -11,35 +10,25 @@ const copyBtn = document.getElementById('copy-btn');
 const themeToggle = document.getElementById('theme-toggle');
 const cleanHtmlToggle = document.getElementById('clean-html-toggle');
 
-// State
 let lastProcessedContent = '';
 
-// Initialize
 function init() {
     setupEventListeners();
     loadTheme();
 }
 
 function setupEventListeners() {
-    // Paste Event
     inputArea.addEventListener('paste', handlePaste);
     
-    // Input Input (for manual typing/editing)
     inputArea.addEventListener('input', () => {
-        // For manual input, we treat it as the content to process
-        // But we don't clear it like paste
         processContent(inputArea.innerHTML);
     });
 
-    // Copy Button
     copyBtn.addEventListener('click', copyToClipboard);
 
-    // Theme Toggle
     themeToggle.addEventListener('click', toggleTheme);
     
-    // Clean HTML Toggle
     cleanHtmlToggle.addEventListener('change', () => {
-        // Re-process the last content to update the view
         if (lastProcessedContent) {
             processContent(lastProcessedContent);
         }
@@ -49,24 +38,16 @@ function setupEventListeners() {
 function handlePaste(e) {
     e.preventDefault();
     
-    // Get pasted data via clipboard API
-    const clipboardData = e.clipboardData || window.clipboardData;
+    const clipboardData = e.clipboardData;
     const pastedHtml = clipboardData.getData('text/html');
     const pastedText = clipboardData.getData('text/plain');
 
-    // Prefer HTML if available, otherwise text
+
     const content = pastedHtml || pastedText;
-
-    // Store for re-processing (e.g. toggle change)
     lastProcessedContent = content;
-
-    // Process content immediately
     processContent(content);
     
-    // Reset input area to empty state
     inputArea.innerHTML = '';
-    
-    // Optional: Show a temporary "Pasted!" message or visual cue in the input area
     inputArea.setAttribute('placeholder', 'Pasted! Ready for more...');
     setTimeout(() => {
         inputArea.setAttribute('placeholder', 'Paste your rich text here...');
@@ -160,7 +141,6 @@ function loadTheme() {
     if (savedTheme) {
         document.documentElement.setAttribute('data-theme', savedTheme);
     } else {
-        // Check system preference
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
     }
@@ -174,5 +154,4 @@ function toggleTheme() {
     localStorage.setItem('theme', newTheme);
 }
 
-// Run
 init();

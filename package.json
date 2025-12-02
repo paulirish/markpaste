@@ -5,10 +5,15 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "npx statikk --port 7025"
+    "start": "npx statikk --port 7025",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run typecheck"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
 }
