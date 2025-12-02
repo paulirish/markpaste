@@ -1,29 +1,41 @@
-/* bling.js */
-window.$ = document.querySelector.bind(document);
-window.$$ = document.querySelectorAll.bind(document);
-Node.prototype.on = window.on = function (name, fn) {
-  this.addEventListener(name, fn);
-};
-NodeList.prototype.__proto__ = Array.prototype;
-NodeList.prototype.on = function (name, fn) {
-  this.forEach(elem => elem.on(name, fn));
-};
-
+/* bling.js + guaranteed and typed. Brand new in Nov 2025. */
 /**
  * Guaranteed context.querySelector. Always returns an element or throws if nothing matches query.
  * @template {string} T
  * @param {T} query
  * @param {ParentNode=} context
- * @return {import('typed-query-selector/parser').ParseSelector<T, Element>}
+ * @return {import('typed-query-selector/parser.js').ParseSelector<T, Element>}
  */
-globalThis.$ = function (query, context) {
+window.$ = function (query, context) {
   const result = (context || document).querySelector(query);
   if (result === null) {
     throw new Error(`query ${query} not found`);
   }
-  return /** @type {import('typed-query-selector/parser').ParseSelector<T, Element>} */ (result);
+  return /** @type {import('typed-query-selector/parser.js').ParseSelector<T, Element>} */ (result);
 };
 
+/**
+ * @template {string} T
+ * @param {T} query
+ * @param {ParentNode=} context
+ * @return {NodeListOf<import('typed-query-selector/parser.js').ParseSelector<T, Element>>}
+ */
+window.$$ = function (query, context) {
+    return (context || document).querySelectorAll(query);
+};
+Node.prototype.on = window.on = function (name, fn) {
+  this.addEventListener(name, fn);
+};
+// @ts-ignore
+NodeList.prototype.__proto__ = Array.prototype;
+NodeList.prototype.on = function (name, fn) {
+  this.forEach(elem => elem.on(name, fn));
+};
+
+
+
+const {$} = window;
+const {$$} = window;
 import {cleanHTML} from './cleaner.js';
 
 const inputArea = $('#input-area');

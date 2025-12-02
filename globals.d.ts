@@ -8,6 +8,7 @@ declare global {
       languages: Grammar;
     };
     TurndownService: typeof TurndownService;
+    toMarkdown: (html: string) => string;
     turndownPluginGfm: {
       gfm: TurndownService.Plugin | TurndownService.Plugin[];
     };
@@ -19,11 +20,12 @@ declare global {
 
   interface Window {
     on(name: string, fn: EventListenerOrEventListenerObject): void;
-    $(selector: string): Element | null;
-    $$(selector: string): NodeListOf<Element>;
+    $<T extends string>(query: T, context?: ParentNode): import('typed-query-selector/parser.js').ParseSelector<T, Element>;
+    $$<T extends string>(query: T, context?: ParentNode): NodeListOf<import('typed-query-selector/parser.js').ParseSelector<T, Element>>;
   }
 
   interface NodeList extends Array<Node> {
     on(name: string, fn: EventListenerOrEventListenerObject): void;
   }
 }
+
