@@ -34,6 +34,28 @@ function setupEventListeners() {
       processContent(lastProcessedContent);
     }
   });
+
+  // Add a keydown event listener for scoped select all
+  document.addEventListener('keydown', handleSelectAll);
+}
+
+function handleSelectAll(e) {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'a') {
+    const activeElement = document.activeElement;
+    if (activeElement) {
+      const editorContainer = activeElement.closest('.editor-container');
+      if (editorContainer) {
+        e.preventDefault();
+        const range = document.createRange();
+        range.selectNodeContents(editorContainer);
+        const selection = window.getSelection();
+        if (selection) {
+          selection.removeAllRanges();
+          selection.addRange(range);
+        }
+      }
+    }
+  }
 }
 
 function handlePaste(e) {
