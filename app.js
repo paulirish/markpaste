@@ -38,12 +38,11 @@ const converterSelector = $('#converter-selector');
 
 let lastProcessedContent = '';
 let converter;
-let currentConverterName = '';
 
 async function init() {
   setupEventListeners();
   loadTheme();
-  currentConverterName = await updateConverter();
+  await updateConverter();
   processContent(inputArea.innerHTML);
 }
 
@@ -66,7 +65,7 @@ function setupEventListeners() {
   });
 
   converterSelector.on('change', async () => {
-    currentConverterName = await updateConverter();
+    await updateConverter();
     inputArea.dispatchEvent(new Event('input', {bubbles: true}));
   });
 
@@ -78,7 +77,6 @@ async function updateConverter() {
   const selectedConverter = $('input[name="converter"]:checked').value;
   const {getConverter} = await import('./converter.js');
   converter = await getConverter(selectedConverter);
-  return selectedConverter;
 }
 
 function handleSelectAll(e) {
@@ -119,7 +117,8 @@ function handlePaste(e) {
 }
 
 function processContent(html) {
-  const shouldClean = cleanHtmlToggle.checked && currentConverterName !== 'pandoc';
+  const selectedConverter = $('input[name="converter"]:checked').value;
+  const shouldClean = cleanHtmlToggle.checked && selectedConverter !== 'pandoc';
 
   const contentToConvert = shouldClean ? cleanHTML(html) : html;
   const markdown = converter.convert(contentToConvert);
