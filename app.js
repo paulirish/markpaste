@@ -1,4 +1,4 @@
-import {cleanHTML} from './cleaner.js';
+import {cleanHTML, removeStyleAttributes} from './cleaner.js';
 
 /* bling.js + guaranteed and typed. Brand new in Nov 2025. */
 /**
@@ -128,7 +128,7 @@ function processContent(html) {
   const selectedConverter = $('input[name="converter"]:checked').value;
   const shouldClean = cleanHtmlToggle.checked;
 
-  const contentToConvert = shouldClean ? cleanHTML(html) : html;
+  const contentToConvert = shouldClean ? cleanHTML(html) : removeStyleAttributes(html);
   const markdown = converter.convert(contentToConvert);
 
   outputCode.textContent = markdown;

@@ -97,3 +97,13 @@ function processNode(sourceNode, targetParent) {
     }
   }
 }
+
+export function removeStyleAttributes(html) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  const allElements = doc.body.getElementsByTagName('*');
+  for (let i = 0; i < allElements.length; i++) {
+    allElements[i].removeAttribute('style');
+  }
+  return doc.body.innerHTML;
+}
