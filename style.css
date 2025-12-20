@@ -106,7 +106,7 @@ body {
 .app-container {
   width: 95%;
   max-width: 1400px;
-  height: 90vh;
+  height: 95vh;
   display: flex;
   flex-direction: column;
   backdrop-filter: blur(16px);
@@ -139,7 +139,6 @@ main.vertical-layout {
 
 .section-html-preview {
   flex: 0 0 auto;
-  min-height: 150px;
   display: flex;
   flex-direction: column;
 }
@@ -169,10 +168,6 @@ main.vertical-layout {
   height: 100%;
 }
 
-/* HTML Panel Specifics */
-.html-panel {
-  height: 100%;
-}
 
 /* 3-Column Grid */
 .three-column-grid {
@@ -294,6 +289,17 @@ main.vertical-layout {
   height: 100%;
 }
 
+/* HTML Panel Specifics */
+.panel.html-panel {
+  height: auto;
+}
+
+#htmlPreview.editor {
+  resize: vertical;
+  min-height: 50px;
+  height: 100px;
+}
+
 .editor-container {
   flex: 1;
   position: relative;
@@ -302,7 +308,7 @@ main.vertical-layout {
   border: 1px solid transparent;
   transition: border-color 0.2s ease;
   overflow: hidden;
-  display: flex;
+  /* display: flex; */
   flex-direction: column;
 }
 
