@@ -47,7 +47,8 @@ const converterSelector = $('fieldset#converterSelector');
 const markdownTooltip = $('#markdown-tooltip');
 
 // Setup Popover/Tooltip behavior
-converterSelector.setAttribute('interestfor', 'markdown-tooltip');
+// TODO: Bring back this rendering stuff but.. not using popover/tooltips. needs a diff UI solution.
+// converterSelector.setAttribute('interestfor', 'markdown-tooltip');
 
 let lastProcessedContent = '';
 let converter;
@@ -82,10 +83,11 @@ function setupEventListeners() {
     processContent(lastProcessedContent);
   });
 
-  markdownTooltip.on('interest', async () => {
-     const markdown = outputCode.textContent || '';
-     await renderMarkdown(markdown, /** @type {HTMLElement} */ (markdownTooltip));
-  });
+  // old code. we'll do this differently in the future.
+  // markdownTooltip.on('interest', async () => {
+  //    const markdown = outputCode.textContent || '';
+  //    await renderMarkdown(markdown, /** @type {HTMLElement} */ (markdownTooltip));
+  // });
 
 
   // Add a keydown event listener for scoped select all

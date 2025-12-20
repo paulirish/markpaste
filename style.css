@@ -424,9 +424,17 @@ code[class*='language-'] {
   align-items: center;
   gap: 0.4rem;
   cursor: pointer;
-  padding: 0 1rem;
+
+  /* give it some height for background hover effect. neg margin cuz i'm lazy */
+  padding: 0.4rem 1rem;
+  margin: -0.4rem 0;
+
   border-radius: 8px;
   transition: all 0.2s ease;
+
+  &:first-child {
+    margin-left: 4px;
+  }
 }
 
 .radio-group label:hover {
