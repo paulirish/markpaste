@@ -27,6 +27,12 @@ const ALLOWED_TAGS = [
   'DD',
   'BR',
   'HR',
+  'TABLE',
+  'THEAD',
+  'TBODY',
+  'TR',
+  'TH',
+  'TD',
 ];
 
 const ALLOWED_ATTRIBUTES = {

@@ -1,4 +1,10 @@
 import {test, expect} from '@playwright/test';
+import * as fs from 'fs';
+import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 test.describe('MarkPaste functionality', () => {
   test.beforeEach(async ({page}) => {
@@ -84,5 +90,23 @@ test.describe('MarkPaste functionality', () => {
 
     expect(await htmlCode.textContent()).toContain('<div>');
     expect(await htmlCode.textContent()).not.toContain('<script>');
+  });
+
+  test('should retain table structure from missing-table-case.html', async ({page}) => {
+    const html = fs.readFileSync(path.join(__dirname, 'fixtures', 'missing-table-case.html'), 'utf8');
+
+    await page.evaluate(html => {
+      const inputArea = document.getElementById('inputArea');
+      inputArea.innerHTML = html;
+      inputArea.dispatchEvent(new Event('input', {bubbles: true}));
+    }, html);
+
+    const htmlCode = page.locator('#htmlCode');
+
+    await expect(htmlCode).toContainText('<table');
+    await expect(htmlCode).toContainText('<tr');
+    await expect(htmlCode).toContainText('<td');
+    // It seems the fixture uses TH as well
+    await expect(htmlCode).toContainText('<th');
   });
 });
