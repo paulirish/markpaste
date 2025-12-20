@@ -103,10 +103,19 @@
 
   </div>
 
+  <script type="importmap">
+    {
+      "imports": {
+        "marked": "./node_modules/marked/lib/marked.esm.js"
+      }
+    }
+  </script>
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
   <script type="module" src="app.js"></script>
+  
+  <div id="markdown-tooltip" popover="hint"></div>
 </body>
 
 </html>

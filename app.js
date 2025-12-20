@@ -1,4 +1,5 @@
 import {cleanHTML, removeStyleAttributes} from './cleaner.js';
+import {renderMarkdown} from './renderer.js';
 
 /* bling.js + guaranteed and typed. Brand new in Nov 2025. */
 /**
@@ -43,6 +44,10 @@ const copyBtn = $('button#copyBtn');
 const themeToggle = $('button#themeToggle');
 const cleanHtmlToggle = $('input#cleanHtmlToggle');
 const converterSelector = $('fieldset#converterSelector');
+const markdownTooltip = $('#markdown-tooltip');
+
+// Setup Popover/Tooltip behavior
+converterSelector.setAttribute('interestfor', 'markdown-tooltip');
 
 let lastProcessedContent = '';
 let converter;
@@ -76,6 +81,12 @@ function setupEventListeners() {
     await updateConverter();
     processContent(lastProcessedContent);
   });
+
+  markdownTooltip.on('interest', async () => {
+     const markdown = outputCode.textContent || '';
+     await renderMarkdown(markdown, /** @type {HTMLElement} */ (markdownTooltip));
+  });
+
 
   // Add a keydown event listener for scoped select all
   document.on('keydown', handleSelectAll);

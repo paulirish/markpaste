@@ -28,6 +28,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
-    "@bjorn3/browser_wasi_shim": "^0.4.2"
+    "@bjorn3/browser_wasi_shim": "^0.4.2",
+    "marked": "^17.0.1"
   }
 }

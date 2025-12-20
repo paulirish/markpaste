@@ -5,11 +5,15 @@ settings:
   excludeLinksFromLockfile: false
 
 importers:
+
   .:
     dependencies:
       '@bjorn3/browser_wasi_shim':
         specifier: ^0.4.2
         version: 0.4.2
+      marked:
+        specifier: ^17.0.1
+        version: 17.0.1
     devDependencies:
       '@playwright/test':
         specifier: ^1.57.0
@@ -31,6 +35,7 @@ importers:
         version: 5.9.3
 
 packages:
+
   '@bjorn3/browser_wasi_shim@0.4.2':
     resolution: {integrity: sha512-/iHkCVUG3VbcbmEHn5iIUpIrh7a7WPiwZ3sHy4HZKZzBdSadwdddYDZAII2zBvQYV0Lfi8naZngPCN7WPHI/hA==}
 
@@ -49,6 +54,11 @@ packages:
     resolution: {integrity: sha512-xiqMQR4xAeHTuB9uWm+fFRcIOgKBMiOBP+eXiyT7jsgVCq1bkVygt00oASowB7EdtpOHaaPgKt812P9ab+DDKA==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
+
+  marked@17.0.1:
+    resolution: {integrity: sha512-boeBdiS0ghpWcSwoNm/jJBwdpFaMnZWRzjA6SkUMYb40SVaN1x7mmfGKp0jvexGcx+7y2La5zRZsYFZI6Qpypg==}
+    engines: {node: '>= 20'}
+    hasBin: true
 
   playwright-core@1.57.0:
     resolution: {integrity: sha512-agTcKlMw/mjBWOnD6kFZttAAGHgi/Nw0CZ2o6JqWSbMlI219lAFLZZCyqByTsvVAJq5XA5H8cA6PrvBRpBWEuQ==}
@@ -74,6 +84,7 @@ packages:
     hasBin: true
 
 snapshots:
+
   '@bjorn3/browser_wasi_shim@0.4.2': {}
 
   '@playwright/test@1.57.0':
@@ -86,6 +97,8 @@ snapshots:
 
   fsevents@2.3.2:
     optional: true
+
+  marked@17.0.1: {}
 
   playwright-core@1.57.0: {}
 
