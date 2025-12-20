@@ -273,6 +273,13 @@ main.vertical-layout {
   background: var(--panel-bg);
 }
 
+
+#themeToggle {
+  background: transparent;
+  border: 0;
+  color: var(--text-color);
+}
+
 /* Reuse existing styles but ensure selectors match */
 .panel-controls {
   display: flex;
@@ -498,4 +505,24 @@ code[class*='language-'] {
 .radio-group label:hover {
   background: var(--secondary-bg);
   color: var(--text-color);
+}
+
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo svg {
+  color: var(--primary-color);
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  background: linear-gradient(135deg, var(--text-color), var(--primary-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
