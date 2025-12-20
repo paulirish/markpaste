@@ -19,18 +19,19 @@
     <div class="blob blob-3"></div>
   </div>
   <div class="app-container glass">
+    <div class="panel input-panel">
+      <div class="editor-container">
+        <div id="inputArea" contenteditable="true" class="editor" placeholder="Paste your rich text here..."></div>
+      </div>
+    </div>
     <main class="two-column-layout">
       <div class="column left-column">
-        <div class="panel input-panel">
-          <div class="editor-container">
-            <div id="inputArea" contenteditable="true" class="editor" placeholder="Paste your rich text here..."></div>
-          </div>
-        </div>
+
         <div class="panel html-panel">
           <div class="panel-controls">
-            <label class="checkbox-label">
-              <input type="checkbox" id="cleanHtmlToggle" checked />
-              Clean HTML
+            <label class="checkbox-label"  title="Strip down to an allowlist of tags & attributes. If unchecked, we'll still remove inline style attributes." >
+              <input type="checkbox" id="cleanHtmlToggle" checked/>
+              Clean the HTML
             </label>
           </div>
           <div class="editor-container">
@@ -40,6 +41,16 @@
       </div>
       <div class="column right-column">
         <div class="panel output-panel">
+
+          <div class="panel-controls">
+            <label for="converterSelector">Convert to markdown via:</label>
+            <fieldset class="radio-group" id="converterSelector">
+              <label><input type="radio" name="converter" value="turndown" checked /> Turndown</label>
+              <label><input type="radio" name="converter" value="to-markdown" /> to-markdown</label>
+              <label><input type="radio" name="converter" value="pandoc" /> Pandoc</label>
+            </fieldset>
+          </div>
+
           <div class="editor-container output-container">
             <pre id="outputPre" class="editor"><code id="outputCode" class="language-markdown"></code></pre>
           </div>
@@ -58,16 +69,8 @@
     </div>
 
 
-  <footer>
-    <label>Convert to markdown via:</label>
-    <div class="panel-controls">
-      <fieldset class="radio-group" id="converterSelector">
-        <label><input type="radio" name="converter" value="turndown" checked /> Turndown</label>
-        <label><input type="radio" name="converter" value="to-markdown" /> to-markdown</label>
-        <label><input type="radio" name="converter" value="pandoc" /> Pandoc</label>
-      </fieldset>
-    </div>
-  </footer>
+
+
   <header>
     <div class="logo">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
