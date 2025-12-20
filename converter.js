@@ -57,7 +57,7 @@ async function getPandocConverter() {
   const pandocModule = await import('./pandoc-built/index.js');
   return {
     convert: html => {
-      const args = '--from html --to gfm --no-highlight';
+      const args = '--from html --to gfm --no-highlight --wrap=preserve';
       const markdown = pandocModule.pandoc(args, html);
       return markdown;
     },
