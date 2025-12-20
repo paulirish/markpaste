@@ -2,7 +2,6 @@ import {test, expect} from '@playwright/test';
 
 test.describe('MarkPaste functionality', () => {
   test.beforeEach(async ({page}) => {
-    page.on('console', msg => console.log(`BROWSER: ${msg.text()}`));
     await page.goto('http://127.0.0.1:8080/index.html');
   });
 
@@ -54,12 +53,12 @@ test.describe('MarkPaste functionality', () => {
 
     // Switch to to-markdown
     await page.locator('input[value="to-markdown"]').check();
-    await page.waitForFunction(() => document.getElementById('outputCode').textContent === '### Hello World');
+    await page.waitForFunction(() => document.getElementById('outputCode').textContent.trim() === '### Hello World');
 
     // Switch to pandoc
     await page.locator('input[value="pandoc"]').check();
     await page.waitForFunction(() => document.getElementById('outputCode').textContent === 'Converting...');
-    await page.waitForFunction(() => document.getElementById('outputCode').textContent === '### Hello World');
+    await page.waitForFunction(() => document.getElementById('outputCode').textContent.trim() === '### Hello World');
   });
 
   // SKIP this for now. needs a human to look into why its failing.

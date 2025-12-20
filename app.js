@@ -144,7 +144,6 @@ function processContent(html) {
   const markdown = converter.convert(contentToConvert);
 
   outputCode.textContent = markdown;
-  console.log('DOM set to:', JSON.stringify(outputCode.textContent));
 
   htmlCode.textContent = formatHTML(contentToConvert);
 
