@@ -328,6 +328,7 @@ code[class*='language-'] {
 /* Actions */
 .panel-actions {
   margin-top: 1rem;
+  grid-column: 1 / -1; /* Span across both columns */
   display: flex;
   justify-content: flex-end;
 }
