@@ -22,7 +22,7 @@ test.describe('Cleaner functionality', () => {
       inputArea.dispatchEvent(new Event('input', {bubbles: true}));
     }, html);
 
-    const outputCode = page.locator('#outputCode');
+    const outputCode = page.locator('#outputCodeTurndown');
 
     await expect(outputCode).not.toContainText('Copy');
     await expect(outputCode).not.toContainText('Play in MDN');

@@ -1,5 +1,6 @@
 import {cleanHTML, removeStyleAttributes} from './cleaner.js';
 import {renderMarkdown} from './renderer.js';
+import {getConverter} from './converter.js';
 
 /* bling.js + guaranteed and typed. Brand new in Nov 2025. */
 /**
@@ -38,26 +39,62 @@ const {$} = window;
 const {$$} = window;
 
 const inputArea = $('div#inputArea');
-const outputCode = $('code#outputCode');
 const htmlCode = $('code#htmlCode');
 const copyBtn = $('button#copyBtn');
 const themeToggle = $('button#themeToggle');
 const cleanHtmlToggle = $('input#cleanHtmlToggle');
-const converterSelector = $('fieldset#converterSelector');
-const markdownTooltip = $('#markdown-tooltip');
 
-// Setup Popover/Tooltip behavior
-// TODO: Bring back this rendering stuff but.. not using popover/tooltips. needs a diff UI solution.
-// converterSelector.setAttribute('interestfor', 'markdown-tooltip');
+// View Toggle
+const viewMarkdownBtn = $('button#viewMarkdownBtn');
+const viewRenderedBtn = $('button#viewRenderedBtn');
+
+// Output Elements
+const outputs = {
+  turndown: {
+    code: $('code#outputCodeTurndown'),
+    preview: $('div#renderPreviewTurndown'),
+    pre: $('pre#outputPreTurndown'),
+  },
+  'to-markdown': {
+    code: $('code#outputCodeToMarkdown'),
+    preview: $('div#renderPreviewToMarkdown'),
+    pre: $('pre#outputPreToMarkdown'),
+  },
+  pandoc: {
+    code: $('code#outputCodePandoc'),
+    preview: $('div#renderPreviewPandoc'),
+    pre: $('pre#outputPrePandoc'),
+  },
+};
 
 let lastProcessedContent = '';
-let converter;
+const converters = {};
+let currentView = 'markdown'; // 'markdown' or 'rendered'
 
 async function init() {
-  setupEventListeners();
   loadTheme();
-  await updateConverter();
-  processContent(inputArea.innerHTML);
+  
+  // Initialize all converters
+  try {
+    const [turndown, toMarkdown, pandoc] = await Promise.all([
+      getConverter('turndown'),
+      getConverter('to-markdown'),
+      getConverter('pandoc')
+    ]);
+    converters.turndown = turndown;
+    converters['to-markdown'] = toMarkdown;
+    converters.pandoc = pandoc;
+  } catch (e) {
+    console.error("Failed to load converters", e);
+  }
+
+  setupEventListeners();
+  
+  // Initial process if there's content (e.g. from reload, though usually empty)
+  if (inputArea.innerHTML) {
+    lastProcessedContent = inputArea.innerHTML;
+    processContent(lastProcessedContent);
+  }
 }
 
 function setupEventListeners() {
@@ -78,27 +115,36 @@ function setupEventListeners() {
     }
   });
 
-  converterSelector.on('change', async () => {
-    await updateConverter();
-    processContent(lastProcessedContent);
-  });
-
-  // old code. we'll do this differently in the future.
-  // markdownTooltip.on('interest', async () => {
-  //    const markdown = outputCode.textContent || '';
-  //    await renderMarkdown(markdown, /** @type {HTMLElement} */ (markdownTooltip));
-  // });
-
+  viewMarkdownBtn.on('click', () => switchView('markdown'));
+  viewRenderedBtn.on('click', () => switchView('rendered'));
 
   // Add a keydown event listener for scoped select all
   document.on('keydown', handleSelectAll);
 }
 
-async function updateConverter() {
-  outputCode.textContent = 'Converting...';
-  const selectedConverter = $('input[name="converter"]:checked').value;
-  const {getConverter} = await import('./converter.js');
-  converter = await getConverter(selectedConverter);
+function switchView(view) {
+  currentView = view;
+  
+  if (view === 'markdown') {
+    viewMarkdownBtn.classList.add('active');
+    viewRenderedBtn.classList.remove('active');
+    
+    Object.values(outputs).forEach(out => {
+      out.pre.classList.remove('hidden');
+      out.preview.classList.add('hidden');
+    });
+  } else {
+    viewRenderedBtn.classList.add('active');
+    viewMarkdownBtn.classList.remove('active');
+    
+    Object.values(outputs).forEach(out => {
+      out.pre.classList.add('hidden');
+      out.preview.classList.remove('hidden');
+    });
+    
+    // Render previews
+    updateRenderedPreviews();
+  }
 }
 
 function handleSelectAll(e) {
@@ -139,19 +185,40 @@ function handlePaste(e) {
 }
 
 function processContent(html) {
-  const selectedConverter = $('input[name="converter"]:checked').value;
   const shouldClean = cleanHtmlToggle.checked;
-
   const contentToConvert = shouldClean ? cleanHTML(html) : removeStyleAttributes(html);
-  const markdown = converter.convert(contentToConvert);
 
-  outputCode.textContent = markdown;
-
+  // Update HTML Preview
   htmlCode.textContent = formatHTML(contentToConvert);
-
   if (window.Prism) {
-    window.Prism.highlightElement(outputCode);
     window.Prism.highlightElement(htmlCode);
+  }
+
+  // Run all converters
+  for (const [name, converter] of Object.entries(converters)) {
+    if (converter) {
+      try {
+        const markdown = converter.convert(contentToConvert);
+        outputs[name].code.textContent = markdown;
+        if (window.Prism) {
+          window.Prism.highlightElement(outputs[name].code);
+        }
+      } catch (err) {
+        console.error(`Converter ${name} failed:`, err);
+        outputs[name].code.textContent = `Error converting with ${name}: ${err.message}`;
+      }
+    }
+  }
+
+  if (currentView === 'rendered') {
+    updateRenderedPreviews();
+  }
+}
+
+async function updateRenderedPreviews() {
+  for (const [name, out] of Object.entries(outputs)) {
+    const markdown = out.code.textContent || '';
+    await renderMarkdown(markdown, out.preview);
   }
 }
 
@@ -191,8 +258,31 @@ function formatHTML(html) {
 }
 
 async function copyToClipboard() {
-  const textToCopy = outputCode.textContent;
-  const htmlToCopy = htmlCode.textContent;
+  const selectedRadio = $('input[name="converter"]:checked');
+  const selectedName = selectedRadio ? selectedRadio.value : 'turndown';
+  
+  const textToCopy = outputs[selectedName].code.textContent;
+  
+  // For the "Rich HTML", we could either copy the source HTML 
+  // OR the rendered HTML from the markdown. 
+  // Given the button says "Rich HTML and text Markdown", usually this means 
+  // putting the Rendered HTML (from markdown) into the clipboard so pasting into GDocs etc works.
+  // But wait, the user might want the *Cleaned* HTML?
+  // Usually "Rich HTML" in clipboard means the rendered representation.
+  // Let's render it on the fly if needed or grab from preview.
+  
+  // Let's generate the HTML to copy from the markdown to ensure it matches the markdown.
+  // We can reuse renderMarkdown logic but we need the string.
+  // Actually renderMarkdown puts it in an element. 
+  
+  // Let's grab the HTML from the preview div if we can, or render it if it's empty.
+  let htmlToCopy;
+  
+  // We can use the renderer to get the HTML string. 
+  // Since renderMarkdown takes an element, let's just make a temp one if needed.
+  const tempDiv = document.createElement('div');
+  await renderMarkdown(textToCopy, tempDiv);
+  htmlToCopy = tempDiv.innerHTML;
 
   try {
     const items = {
@@ -204,7 +294,7 @@ async function copyToClipboard() {
 
     // Visual feedback
     const originalText = copyBtn.innerHTML;
-    copyBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Rich HTML and text Markdown both copied!`;
+    copyBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied (${selectedName})!`;
     copyBtn.classList.add('success');
 
     setTimeout(() => {
@@ -213,6 +303,10 @@ async function copyToClipboard() {
     }, 2000);
   } catch (err) {
     console.error('Failed to copy:', err);
+    copyBtn.textContent = 'Copy failed';
+    setTimeout(() => {
+       copyBtn.innerHTML = originalText;
+    }, 2000);
   }
 }
 

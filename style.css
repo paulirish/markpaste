@@ -118,98 +118,167 @@ body {
   overflow: hidden;
 }
 
-/* Header */
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 1rem;
-  border-bottom: var(--glass-border);
-}
-
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-weight: 600;
-  font-size: 1.25rem;
-  color: var(--text-color);
-}
-
-.logo svg {
-  color: var(--primary-color);
-}
-
-.icon-btn {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 0.5rem;
-  border-radius: 50%;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.icon-btn:hover {
-  background: var(--secondary-bg);
-  color: var(--text-color);
-}
-
-[data-theme='dark'] .sun-icon {
-  display: block;
-}
-[data-theme='dark'] .moon-icon {
-  display: none;
-}
-[data-theme='light'] .sun-icon {
-  display: none;
-}
-[data-theme='light'] .moon-icon {
-  display: block;
-}
-
-/* Main Content */
-main {
+/* Main Content - Vertical Layout */
+main.vertical-layout {
   flex: 1;
   display: flex;
+  flex-direction: column;
   padding: 1rem 2rem 0;
-  gap: 2rem;
-  overflow: hidden;
+  gap: 1rem;
+  overflow-y: auto; /* Allow scrolling if content is tall */
+  min-height: 0; /* Important for flex child scrolling */
 }
 
-.two-column-layout {
+/* Sections */
+.section-input {
+  flex: 0 0 auto;
+  min-height: 100px;
   display: flex;
-  gap: 2rem;
+  flex-direction: column;
 }
 
-.column {
+.section-html-preview {
+  flex: 0 0 auto;
+  min-height: 150px;
+  display: flex;
+  flex-direction: column;
+}
+
+.section-controls {
+  flex: 0 0 auto;
+  display: flex;
+  justify-content: flex-end; /* or center? Mock shows right aligned maybe? No, let's right align to match controls */
+  padding-bottom: 0.5rem;
+}
+
+.section-outputs {
+  flex: 1;
+  min-height: 200px; /* Minimum height for outputs */
+  display: flex;
+  gap: 1rem;
+}
+
+.section-copy-actions {
+  flex: 0 0 auto;
+  padding: 1rem 0;
+}
+
+
+/* Input Panel Specifics */
+.input-panel {
+  height: 100%;
+}
+
+/* HTML Panel Specifics */
+.html-panel {
+  height: 100%;
+}
+
+/* 3-Column Grid */
+.three-column-grid {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+
+.output-column {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
 
-.left-column {
+.output-column .panel {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  flex: 0.3;
 }
 
-.input-panel {
-  flex: 0;
-  min-height: 100px; /* Ensure some height */
+.output-column .editor-container {
+  flex: 1;
+  /* Ensure previews scroll internally */
+  overflow: hidden; 
 }
 
-.html-panel {
-  flex: 5;
+.column-footer {
   display: flex;
-  flex-direction: column;
-  min-height: 200px;
+  justify-content: center;
+  padding-top: 0.5rem;
 }
 
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.radio-label input {
+  accent-color: var(--primary-color);
+}
+
+
+/* View Toggle Buttons */
+.view-toggle {
+  display: flex;
+  background: var(--secondary-bg);
+  padding: 0.25rem;
+  border-radius: 8px;
+  gap: 0.25rem;
+}
+
+.view-toggle .toggle-btn {
+  background: none;
+  border: none;
+  padding: 0.4rem 1rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.view-toggle .toggle-btn.active {
+  background: var(--bg-color);
+  color: var(--text-color);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  font-weight: 500;
+}
+
+/* Render Preview (vs Editor) */
+.render-preview {
+  width: 100%;
+  height: 100%;
+  padding: 1.5rem;
+  overflow-y: auto;
+  background: white; /* Rendered HTML usually expects white bg, or adapt to theme? */
+  color: black;
+  border-radius: 12px;
+}
+
+[data-theme='dark'] .render-preview {
+  background: #1e293b; /* darker bg for dark mode */
+  color: #e2e8f0;
+}
+
+/* Hidden Utility */
+.hidden {
+  display: none !important;
+}
+
+/* App Footer */
+.app-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  border-top: var(--glass-border);
+  background: var(--panel-bg);
+}
+
+/* Reuse existing styles but ensure selectors match */
 .panel-controls {
   display: flex;
   justify-content: flex-end;
@@ -218,28 +287,11 @@ main {
   color: var(--text-muted);
 }
 
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  cursor: pointer;
-  user-select: none;
-}
-
-.checkbox-label input {
-  accent-color: var(--primary-color);
-}
-
 .panel {
   display: flex;
   flex-direction: column;
-  min-width: 0; /* Prevent flex item from overflowing */
+  min-width: 0;
   height: 100%;
-}
-
-/* Remove old panel header styles if not used, or keep for potential future use */
-.panel-header {
-  display: none; /* Hide old headers */
 }
 
 .editor-container {
@@ -272,8 +324,8 @@ main {
   color: var(--text-color);
   outline: none;
   overflow-y: auto;
-  margin: 0; /* Override user agent styles for pre */
-  white-space: pre-wrap; /* Wrap text in pre */
+  margin: 0;
+  white-space: pre-wrap;
 }
 
 /* Prism Overrides */
