@@ -264,9 +264,12 @@ h1 {
   line-height: 1.5;
   resize: none;
   overflow: auto;
-  white-space: pre-wrap; 
   background: transparent;
   color: var(--text-color);
+
+  &, code {
+    white-space: pre-wrap !important; 
+  }
 }
 
 /* Custom Scrollbar */

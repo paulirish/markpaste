@@ -61,6 +61,17 @@ function processNode(sourceNode, targetParent) {
   if (sourceNode.nodeType === Node.ELEMENT_NODE) {
     const tagName = sourceNode.tagName.toUpperCase();
 
+    // MDN specific cleaning: remove copy button and play links
+    if (sourceNode.classList.contains('mdn-copy-button')) {
+      return;
+    }
+    if (
+      tagName === 'A' &&
+      sourceNode.getAttribute('href')?.startsWith('https://developer.mozilla.org/en-US/play')
+    ) {
+      return;
+    }
+
     if (ALLOWED_TAGS.includes(tagName)) {
       const newElement = document.createElement(tagName);
 
