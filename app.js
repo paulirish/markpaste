@@ -47,7 +47,8 @@ const converterSelector = $('fieldset#converterSelector');
 const markdownTooltip = $('#markdown-tooltip');
 
 // Setup Popover/Tooltip behavior
-converterSelector.setAttribute('interestfor', 'markdown-tooltip');
+// TODO: Bring back this rendering stuff but.. not using popover/tooltips. needs a diff UI solution.
+// converterSelector.setAttribute('interestfor', 'markdown-tooltip');
 
 let lastProcessedContent = '';
 let converter;
