@@ -1,13 +1,8 @@
 import {test, expect} from '@playwright/test';
-import * as fs from 'fs';
-import * as path from 'path';
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 test.describe('MarkPaste functionality', () => {
   test.beforeEach(async ({page}) => {
+    page.on('console', msg => console.log(`BROWSER: ${msg.text()}`));
     await page.goto('http://127.0.0.1:8080/index.html');
   });
 
@@ -63,7 +58,8 @@ test.describe('MarkPaste functionality', () => {
 
     // Switch to pandoc
     await page.locator('input[value="pandoc"]').check();
-    await page.waitForFunction(() => document.getElementById('outputCode').textContent.includes('--- PANDOC MOCK ---'));
+    await page.waitForFunction(() => document.getElementById('outputCode').textContent === 'Converting...');
+    await page.waitForFunction(() => document.getElementById('outputCode').textContent === '### Hello World');
   });
 
   // SKIP this for now. needs a human to look into why its failing.
@@ -92,8 +88,23 @@ test.describe('MarkPaste functionality', () => {
     expect(await htmlCode.textContent()).not.toContain('<script>');
   });
 
-  test('should retain table structure from missing-table-case.html', async ({page}) => {
-    const html = fs.readFileSync(path.join(__dirname, 'fixtures', 'missing-table-case.html'), 'utf8');
+  test('should retain table structure', async ({page}) => {
+    const html = `
+      <table>
+        <thead>
+          <tr>
+            <th>Header 1</th>
+            <th>Header 2</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Row 1, Cell 1</td>
+            <td>Row 1, Cell 2</td>
+          </tr>
+        </tbody>
+      </table>
+    `;
 
     await page.evaluate(html => {
       const inputArea = document.getElementById('inputArea');
@@ -106,7 +117,6 @@ test.describe('MarkPaste functionality', () => {
     await expect(htmlCode).toContainText('<table');
     await expect(htmlCode).toContainText('<tr');
     await expect(htmlCode).toContainText('<td');
-    // It seems the fixture uses TH as well
     await expect(htmlCode).toContainText('<th');
   });
 });

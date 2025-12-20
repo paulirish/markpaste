@@ -13,3 +13,17 @@ The key files in the project are:
 - `converter.js`: Contains the logic for converting HTML to Markdown.
 - `tests/pasting.spec.ts`: The Playwright test file.
 - `package.json`: The project's manifest file. PNPM is the preferred package manager
+
+## Testing
+
+While `pnpm test` will run all tests.. sometimes you'll want to run only specific tests…
+
+Run a specific test file:
+```sh
+pnpm test tests/cleaner.spec.ts
+```
+
+Run a specific test case (by name):
+```sh
+pnpm test -g "should clean HTML"
+```

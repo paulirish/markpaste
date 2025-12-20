@@ -93,6 +93,7 @@ function setupEventListeners() {
 }
 
 async function updateConverter() {
+  outputCode.textContent = 'Converting...';
   const selectedConverter = $('input[name="converter"]:checked').value;
   const {getConverter} = await import('./converter.js');
   converter = await getConverter(selectedConverter);
@@ -143,6 +144,7 @@ function processContent(html) {
   const markdown = converter.convert(contentToConvert);
 
   outputCode.textContent = markdown;
+  console.log('DOM set to:', JSON.stringify(outputCode.textContent));
 
   htmlCode.textContent = formatHTML(contentToConvert);
 
