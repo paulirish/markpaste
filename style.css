@@ -133,7 +133,7 @@ main.vertical-layout {
 /* Sections */
 .section-input {
   flex: 0 0 auto;
-  min-height: 100px;
+  min-height: 50px;
   display: flex;
   flex-direction: column;
 }
@@ -193,7 +193,7 @@ main.vertical-layout {
 .output-column .editor-container {
   flex: 1;
   /* Ensure previews scroll internally */
-  overflow: hidden; 
+  overflow: hidden;
 }
 
 .column-footer {
@@ -213,7 +213,7 @@ main.vertical-layout {
   margin-top: 0.1rem;
   border-radius: 4px;
   transition: 150ms background-color;
-  
+
   &:hover {
     background: var(--secondary-bg);
   }

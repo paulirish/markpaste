@@ -69,27 +69,31 @@ const outputs = {
 
 let lastProcessedContent = '';
 const converters = {};
+const convertersPromise = Promise.all([
+  getConverter('turndown'),
+  getConverter('to-markdown'),
+  getConverter('pandoc')
+]).then(([turndown, toMarkdown, pandoc]) => {
+  converters.turndown = turndown;
+  converters['to-markdown'] = toMarkdown;
+  converters.pandoc = pandoc;
+}).catch(e => {
+  console.error("Failed to load converters", e);
+});
+
 let currentView = 'markdown'; // 'markdown' or 'rendered'
 
 async function init() {
-  loadTheme();
-  
-  // Initialize all converters
-  try {
-    const [turndown, toMarkdown, pandoc] = await Promise.all([
-      getConverter('turndown'),
-      getConverter('to-markdown'),
-      getConverter('pandoc')
-    ]);
-    converters.turndown = turndown;
-    converters['to-markdown'] = toMarkdown;
-    converters.pandoc = pandoc;
-  } catch (e) {
-    console.error("Failed to load converters", e);
-  }
 
   setupEventListeners();
-  
+
+  loadTheme();
+
+  // Initialize all converters
+  await convertersPromise;
+
+
+
   // Initial process if there's content (e.g. from reload, though usually empty)
   if (inputArea.innerHTML) {
     lastProcessedContent = inputArea.innerHTML;
@@ -124,11 +128,11 @@ function setupEventListeners() {
 
 function switchView(view) {
   currentView = view;
-  
+
   if (view === 'markdown') {
     viewMarkdownBtn.classList.add('active');
     viewRenderedBtn.classList.remove('active');
-    
+
     Object.values(outputs).forEach(out => {
       out.pre.classList.remove('hidden');
       out.preview.classList.add('hidden');
@@ -136,12 +140,12 @@ function switchView(view) {
   } else {
     viewRenderedBtn.classList.add('active');
     viewMarkdownBtn.classList.remove('active');
-    
+
     Object.values(outputs).forEach(out => {
       out.pre.classList.add('hidden');
       out.preview.classList.remove('hidden');
     });
-    
+
     // Render previews
     updateRenderedPreviews();
   }
@@ -166,12 +170,14 @@ function handleSelectAll(e) {
   }
 }
 
-function handlePaste(e) {
+async function handlePaste(e) {
   e.preventDefault();
 
   const clipboardData = e.clipboardData;
   const pastedHtml = clipboardData.getData('text/html');
   const pastedText = clipboardData.getData('text/plain');
+
+  await convertersPromise;
 
   const content = pastedHtml || pastedText;
   lastProcessedContent = content;
@@ -260,25 +266,25 @@ function formatHTML(html) {
 async function copyToClipboard() {
   const selectedRadio = $('input[name="converter"]:checked');
   const selectedName = selectedRadio ? selectedRadio.value : 'turndown';
-  
+
   const textToCopy = outputs[selectedName].code.textContent;
-  
-  // For the "Rich HTML", we could either copy the source HTML 
-  // OR the rendered HTML from the markdown. 
-  // Given the button says "Rich HTML and text Markdown", usually this means 
+
+  // For the "Rich HTML", we could either copy the source HTML
+  // OR the rendered HTML from the markdown.
+  // Given the button says "Rich HTML and text Markdown", usually this means
   // putting the Rendered HTML (from markdown) into the clipboard so pasting into GDocs etc works.
   // But wait, the user might want the *Cleaned* HTML?
   // Usually "Rich HTML" in clipboard means the rendered representation.
   // Let's render it on the fly if needed or grab from preview.
-  
+
   // Let's generate the HTML to copy from the markdown to ensure it matches the markdown.
   // We can reuse renderMarkdown logic but we need the string.
-  // Actually renderMarkdown puts it in an element. 
-  
+  // Actually renderMarkdown puts it in an element.
+
   // Let's grab the HTML from the preview div if we can, or render it if it's empty.
   let htmlToCopy;
-  
-  // We can use the renderer to get the HTML string. 
+
+  // We can use the renderer to get the HTML string.
   // Since renderMarkdown takes an element, let's just make a temp one if needed.
   const tempDiv = document.createElement('div');
   await renderMarkdown(textToCopy, tempDiv);
