@@ -17,12 +17,12 @@
     - [x] Ensure browser still loads these (likely using ESM paths to `node_modules` or import maps).
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Refactoring Core Modules' (Protocol in workflow.md) ab37835
 
-## Phase 3: Isomorphic WASM (Pandoc)
+## Phase 3: Isomorphic WASM (Pandoc) [checkpoint: 1d337bc]
 - [x] Task: Abstract the WASM file loader in `pandoc-built/index.js`. 7b2f0b2
     - [x] Create `tests/node/pandoc.test.js` (Red phase).
     - [x] Implement a `loadWasm` helper: uses `fs.readFile` (Node) or `fetch` (Browser).
     - [x] Ensure `@bjorn3/browser_wasi_shim` works in Node context.
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Isomorphic WASM' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Isomorphic WASM' (Protocol in workflow.md) 1d337bc
 
 ## Phase 4: Library Entry Point & Final Verification
 - [ ] Task: Create `index.js` (Library Entry Point).
