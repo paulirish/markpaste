@@ -18,10 +18,10 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 2: Refactoring Core Modules' (Protocol in workflow.md) ab37835
 
 ## Phase 3: Isomorphic WASM (Pandoc)
-- [ ] Task: Abstract the WASM file loader in `pandoc-built/index.js`.
-    - [ ] Create `tests/node/pandoc.test.js` (Red phase).
-    - [ ] Implement a `loadWasm` helper: uses `fs.readFile` (Node) or `fetch` (Browser).
-    - [ ] Ensure `@bjorn3/browser_wasi_shim` works in Node context.
+- [x] Task: Abstract the WASM file loader in `pandoc-built/index.js`. 7b2f0b2
+    - [x] Create `tests/node/pandoc.test.js` (Red phase).
+    - [x] Implement a `loadWasm` helper: uses `fs.readFile` (Node) or `fetch` (Browser).
+    - [x] Ensure `@bjorn3/browser_wasi_shim` works in Node context.
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: Isomorphic WASM' (Protocol in workflow.md)
 
 ## Phase 4: Library Entry Point & Final Verification
