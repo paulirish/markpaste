@@ -4,33 +4,28 @@
  * Dynamically loads and uses different conversion libraries.
  */
 
+const isBrowser = typeof window !== 'undefined';
+
 async function getTurndownConverter() {
-  if (!window.TurndownService) {
-    // Basic script loader
-    await new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/turndown/dist/turndown.js';
-      script.onload = resolve;
-      script.onerror = reject;
-      document.head.appendChild(script);
-    });
-    await new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/turndown-plugin-gfm/dist/turndown-plugin-gfm.js';
-      script.onload = resolve;
-      script.onerror = reject;
-      document.head.appendChild(script);
-    });
+  let TurndownService, turndownPluginGfm;
+  if (isBrowser) {
+    const turndownMod = await import('turndown');
+    TurndownService = turndownMod.default;
+    const gfmMod = await import('turndown-plugin-gfm');
+    turndownPluginGfm = gfmMod.gfm;
+  } else {
+    TurndownService = (await import('turndown')).default;
+    turndownPluginGfm = (await import('turndown-plugin-gfm')).gfm;
   }
 
-  const turndownService = new window.TurndownService({
+  const turndownService = new TurndownService({
     headingStyle: 'atx',
     codeBlockStyle: 'fenced',
     emDelimiter: '*',
   });
 
-  if (window.turndownPluginGfm) {
-    turndownService.use(window.turndownPluginGfm.gfm);
+  if (turndownPluginGfm) {
+    turndownService.use(turndownPluginGfm);
   }
 
   return {
@@ -39,17 +34,17 @@ async function getTurndownConverter() {
 }
 
 async function getToMarkdownConverter() {
-  if (!window.toMarkdown) {
-    await new Promise((resolve, reject) => {
-      const script = document.createElement('script');
-      script.src = 'https://unpkg.com/to-markdown/dist/to-markdown.js';
-      script.onload = resolve;
-      script.onerror = reject;
-      document.head.appendChild(script);
-    });
+  let toMarkdown;
+  if (isBrowser) {
+    // to-markdown is UMD. Browser import might need help if not mapped correctly.
+    const mod = await import('to-markdown');
+    toMarkdown = mod.default || window.toMarkdown;
+  } else {
+    toMarkdown = (await import('to-markdown')).default;
   }
+  
   return {
-    convert: html => window.toMarkdown(html),
+    convert: html => toMarkdown(html),
   };
 }
 
