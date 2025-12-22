@@ -1,10 +1,15 @@
-console.log('app.js execution started');
 import {cleanHTML, removeStyleAttributes} from './cleaner.js';
 import {renderMarkdown} from './renderer.js';
 import {getConverter} from './converter.js';
-console.log('app.js imports finished');
 
 /* bling.js + guaranteed and typed. Brand new in Nov 2025. */
+/**
+ * Guaranteed context.querySelector. Always returns an element or throws if nothing matches query.
+ * @template {string} T
+ * @param {T} query
+ * @param {ParentNode=} context
+ * @return {import('typed-query-selector/parser.js').ParseSelector<T, Element>}
+ */
 window.$ = function (query, context) {
   const result = (context || document).querySelector(query);
   if (result === null) {
@@ -12,6 +17,12 @@ window.$ = function (query, context) {
   }
   return result;
 };
+/**
+ * @template {string} T
+ * @param {T} query
+ * @param {ParentNode=} context
+ * @return {NodeListOf<import('typed-query-selector/parser.js').ParseSelector<T, Element>>}
+ */
 window.$$ = (query, context) => (context || document).querySelectorAll(query);
 
 Node.prototype.on = window.on = function (name, fn) {
@@ -24,34 +35,54 @@ NodeList.prototype.on = function (name, fn) {
 };
 // Bling'ed out.
 
+// Theme Management
+function loadTheme() {
+  const savedTheme = localStorage.getItem('theme');
+
+  if (savedTheme) {
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  } else {
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+  }
+}
+
+function toggleTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+
+  document.documentElement.setAttribute('data-theme', newTheme);
+  localStorage.setItem('theme', newTheme);
+}
+
 const {$ } = window;
 
-const inputArea = $("div#inputArea");
-const htmlCode = $("code#htmlCode");
-const copyBtn = $("button#copyBtn");
-const themeToggle = $("button#themeToggle");
-const cleanHtmlToggle = $("input#cleanHtmlToggle");
+const inputArea = $('div#inputArea');
+const htmlCode = $('code#htmlCode');
+const copyBtn = $('button#copyBtn');
+const themeToggle = $('button#themeToggle');
+const cleanHtmlToggle = $('input#cleanHtmlToggle');
 
 // View Toggle
-const viewMarkdownBtn = $("button#viewMarkdownBtn");
-const viewRenderedBtn = $("button#viewRenderedBtn");
+const viewMarkdownBtn = $('button#viewMarkdownBtn');
+const viewRenderedBtn = $('button#viewRenderedBtn');
 
 // Output Elements
 const outputs = {
   turndown: {
-    code: $("code#outputCodeTurndown"),
-    preview: $("div#renderPreviewTurndown"),
-    pre: $("pre#outputPreTurndown"),
+    code: $('code#outputCodeTurndown'),
+    preview: $('div#renderPreviewTurndown'),
+    pre: $('pre#outputPreTurndown'),
   },
   'to-markdown': {
-    code: $("code#outputCodeToMarkdown"),
-    preview: $("div#renderPreviewToMarkdown"),
-    pre: $("pre#outputPreToMarkdown"),
+    code: $('code#outputCodeToMarkdown'),
+    preview: $('div#renderPreviewToMarkdown'),
+    pre: $('pre#outputPreToMarkdown'),
   },
   pandoc: {
-    code: $("code#outputCodePandoc"),
-    preview: $("div#renderPreviewPandoc"),
-    pre: $("pre#outputPrePandoc"),
+    code: $('code#outputCodePandoc'),
+    preview: $('div#renderPreviewPandoc'),
+    pre: $('pre#outputPrePandoc'),
   },
 };
 
@@ -65,28 +96,20 @@ const convertersPromise = Promise.all([
   converters.turndown = turndown;
   converters['to-markdown'] = toMarkdown;
   converters.pandoc = pandoc;
-  console.log('Converters loaded successfully');
 }).catch(e => {
   console.error("Failed to load converters", e);
-  throw e;
 });
 
 let currentView = 'markdown'; // 'markdown' or 'rendered'
 
 async function init() {
-  console.log('init() started');
+
   setupEventListeners();
 
   loadTheme();
 
   // Initialize all converters
-  try {
-    console.log('awaiting convertersPromise...');
-    await convertersPromise;
-    console.log('convertersPromise resolved');
-  } catch (e) {
-    console.error('Initialization failed during converter loading', e);
-  }
+  await convertersPromise;
 
   // Setup Idle Detection
   if ('IdleDetector' in window) {
@@ -142,7 +165,7 @@ function setupEventListeners() {
 
   copyBtn.on('click', copyToClipboard);
 
-  // themeToggle.on('click', toggleTheme);
+  themeToggle.on('click', toggleTheme);
 
   cleanHtmlToggle.on('change', () => {
     if (lastProcessedContent) {
@@ -221,11 +244,9 @@ async function handlePaste(e) {
   }, 2000);
 }
 
-async function processContent(html) {
-  console.log('processContent called with html length:', html.length);
+function processContent(html) {
   const shouldClean = cleanHtmlToggle.checked;
-  const contentToConvert = shouldClean ? await cleanHTML(html) : await removeStyleAttributes(html);
-  console.log('contentToConvert length:', contentToConvert.length);
+  const contentToConvert = shouldClean ? cleanHTML(html) : removeStyleAttributes(html);
 
   // Update HTML Preview
   htmlCode.textContent = formatHTML(contentToConvert);
@@ -234,12 +255,10 @@ async function processContent(html) {
   }
 
   // Run all converters
-  console.log('Converters available:', Object.keys(converters));
   for (const [name, converter] of Object.entries(converters)) {
     if (converter) {
       try {
         const markdown = converter.convert(contentToConvert);
-        console.log(`Converter ${name} produced markdown length:`, markdown.length);
         outputs[name].code.textContent = markdown;
         if (window.Prism) {
           window.Prism.highlightElement(outputs[name].code);
@@ -248,8 +267,6 @@ async function processContent(html) {
         console.error(`Converter ${name} failed:`, err);
         outputs[name].code.textContent = `Error converting with ${name}: ${err.message}`;
       }
-    } else {
-      console.warn(`Converter ${name} is not loaded yet`);
     }
   }
 
@@ -315,9 +332,11 @@ async function copyToClipboard() {
 
   try {
     const items = {
-      'text/plain': new Blob([textToCopy], {type: 'text/plain'}),
-      'text/html': new Blob([htmlToCopy], {type: 'text/html'}),
+      'text/plain': new Blob([textToCopy], {type: 'text/plain'})
     };
+    if (htmlToCopy) {
+      items['text/html'] = new Blob([htmlToCopy], {type: 'text/html'});
+    }
     const cpItem = new ClipboardItem(items);
     await navigator.clipboard.write([cpItem]);
 
@@ -336,18 +355,6 @@ async function copyToClipboard() {
     setTimeout(() => {
        copyBtn.innerHTML = originalText;
     }, 2000);
-  }
-}
-
-// Theme Management
-function loadTheme() {
-  const savedTheme = localStorage.getItem('theme');
-
-  if (savedTheme) {
-    document.documentElement.setAttribute('data-theme', savedTheme);
-  } else {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
   }
 }
 

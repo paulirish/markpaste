@@ -1,54 +1,64 @@
-import { getTurndownConverter as getTurndownBrowser, getToMarkdownConverter as getToMarkdownBrowser, getPandocConverter as getPandocBrowser } from './converter-browser.js';
+/**
+ * converter.js
+ * Handles conversion from HTML to Markdown.
+ * Dynamically loads and uses different conversion libraries.
+ */
 
 const isBrowser = typeof window !== 'undefined';
 
 async function getTurndownConverter() {
+  let TurndownService, turndownPluginGfm;
   if (isBrowser) {
-    return getTurndownBrowser();
+    const turndownMod = await import('turndown');
+    TurndownService = turndownMod.default;
+    const gfmMod = await import('turndown-plugin-gfm');
+    turndownPluginGfm = gfmMod.gfm;
   } else {
-    const TurndownService = (await import('turndown')).default;
-    const { gfm } = await import('turndown-plugin-gfm');
-    const turndownService = new TurndownService({
-      headingStyle: 'atx',
-      codeBlockStyle: 'fenced',
-      emDelimiter: '*',
-    });
-    if (gfm) {
-      turndownService.use(gfm);
-    }
-    return {
-      convert: html => turndownService.turndown(html),
-    };
+    TurndownService = (await import('turndown')).default;
+    turndownPluginGfm = (await import('turndown-plugin-gfm')).gfm;
   }
+
+  const turndownService = new TurndownService({
+    headingStyle: 'atx',
+    codeBlockStyle: 'fenced',
+    emDelimiter: '*',
+  });
+
+  if (turndownPluginGfm) {
+    turndownService.use(turndownPluginGfm);
+  }
+
+  return {
+    convert: html => turndownService.turndown(html),
+  };
 }
 
 async function getToMarkdownConverter() {
+  let toMarkdown;
   if (isBrowser) {
-    return getToMarkdownBrowser();
+    const mod = await import('to-markdown');
+    toMarkdown = mod.default || window.toMarkdown;
   } else {
-    const toMarkdown = (await import('to-markdown')).default;
-    return {
-      convert: html => toMarkdown(html),
-    };
+    toMarkdown = (await import('to-markdown')).default;
   }
+  
+  return {
+    convert: html => toMarkdown(html),
+  };
 }
 
 async function getPandocConverter() {
-  if (isBrowser) {
-    return getPandocBrowser();
-  } else {
-    const pandocModule = await import('./pandoc-built/index.js');
-    return {
-      convert: html => {
-        const args = '--from html --to gfm --no-highlight --wrap=preserve';
-        const markdown = pandocModule.pandoc(args, html);
-        return markdown;
-      },
-      dispose: () => {
-        pandocModule.dispose();
-      }
-    };
-  }
+  const pandocModule = await import('./pandoc-built/index.js');
+  return {
+    convert: html => {
+      const args = '--from html --to gfm --no-highlight --wrap=preserve';
+      const markdown = pandocModule.pandoc(args, html);
+      return markdown;
+    },
+    dispose: () => {
+      pandocModule.dispose();
+    }
+  };
 }
 
 const converters = {

@@ -2,8 +2,6 @@ import {test, expect} from '@playwright/test';
 
 test.describe('MarkPaste functionality', () => {
   test.beforeEach(async ({page}) => {
-    page.on('console', msg => console.log('BROWSER:', msg.text()));
-    page.on('pageerror', err => console.error('BROWSER ERROR:', err.message));
     await page.goto('http://127.0.0.1:8081/index.html');
   });
 
