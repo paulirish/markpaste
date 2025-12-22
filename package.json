@@ -8,7 +8,8 @@
     "start": "npx statikk --port 7025",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
-    "test": "playwright test"
+    "test": "playwright test",
+    "test:node": "node --test tests/node/**/*.test.js"
   },
   "packageManager": "pnpm@10.22.0",
   "engines": {
@@ -29,6 +30,11 @@
   },
   "dependencies": {
     "@bjorn3/browser_wasi_shim": "^0.4.2",
-    "marked": "^17.0.1"
+    "@types/node": "^25.0.3",
+    "linkedom": "^0.18.12",
+    "marked": "^17.0.1",
+    "to-markdown": "^3.1.1",
+    "turndown": "^7.2.2",
+    "turndown-plugin-gfm": "^1.0.2"
   }
 }
