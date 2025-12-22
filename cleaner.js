@@ -3,72 +3,76 @@
  * Implements HTML cleaning logic similar to paste-html-subset.
  */
 
+// Environment detection and DOM setup
+let parseHTMLGlobal, documentGlobal, NodeGlobal, fallbackDocument;
+
+if (typeof window !== 'undefined') {
+  parseHTMLGlobal = (html) => {
+    const parser = new DOMParser();
+    return parser.parseFromString(html, 'text/html');
+  };
+  documentGlobal = window.document;
+  NodeGlobal = window.Node;
+} else {
+  // We are in Node.js
+  const { parseHTML } = await import('linkedom');
+  parseHTMLGlobal = (html) => {
+    // Wrap in full document structure to ensure it lands in body
+    const fullHtml = `<!DOCTYPE html><html><body>${html}</body></html>`;
+    return parseHTML(fullHtml).document;
+  };
+  // Initialize linkedom once to get Node and document for creation
+  const linkedom = parseHTML('<html><body></body></html>');
+  documentGlobal = linkedom.document;
+  NodeGlobal = linkedom.Node;
+  fallbackDocument = linkedom.document;
+}
+
 const ALLOWED_TAGS = [
-  'P',
-  'STRONG',
-  'B',
-  'EM',
-  'I',
-  'BLOCKQUOTE',
-  'CODE',
-  'PRE',
-  'A',
-  'H1',
-  'H2',
-  'H3',
-  'H4',
-  'H5',
-  'H6',
-  'UL',
-  'OL',
-  'LI',
-  'DL',
-  'DT',
-  'DD',
-  'BR',
-  'HR',
-  'TABLE',
-  'THEAD',
-  'TBODY',
-  'TR',
-  'TH',
-  'TD',
+  'P', 'STRONG', 'B', 'EM', 'I', 'BLOCKQUOTE', 'CODE', 'PRE', 'A', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6',
+  'UL', 'OL', 'LI', 'DL', 'DT', 'DD', 'BR', 'HR', 'TABLE', 'THEAD', 'TBODY', 'TR', 'TH', 'TD',
 ];
 
 const ALLOWED_ATTRIBUTES = {
   A: ['href', 'title', 'target'],
-  IMG: ['src', 'alt', 'title', 'width', 'height'], // Optional, but good to have
+  IMG: ['src', 'alt', 'title', 'width', 'height'],
 };
 
 export function cleanHTML(html) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
+  const doc = parseHTMLGlobal(html);
+  const sourceBody = doc.body;
 
   // Create a new document for the cleaned output
-  const cleanDoc = document.implementation.createHTMLDocument('clean');
-  const body = cleanDoc.body;
+  let targetBody;
+  if (documentGlobal && documentGlobal.implementation && documentGlobal.implementation.createHTMLDocument) {
+    const cleanDoc = documentGlobal.implementation.createHTMLDocument('clean');
+    targetBody = cleanDoc.body;
+  } else if (fallbackDocument) {
+    // Fallback for linkedom
+    targetBody = fallbackDocument.createElement('body');
+  }
 
   // Process the input body
-  processNode(doc.body, body);
+  processNode(sourceBody, targetBody);
 
-  return body.innerHTML;
+  return targetBody.innerHTML;
 }
 
 function processNode(sourceNode, targetParent) {
   // Handle text nodes
-  if (sourceNode.nodeType === Node.TEXT_NODE) {
+  if (sourceNode.nodeType === NodeGlobal.TEXT_NODE) {
     if (sourceNode.textContent) {
-      targetParent.appendChild(document.createTextNode(sourceNode.textContent));
+      targetParent.appendChild(documentGlobal.createTextNode(sourceNode.textContent));
     }
     return;
   }
 
   // Handle element nodes
-  if (sourceNode.nodeType === Node.ELEMENT_NODE) {
+  if (sourceNode.nodeType === NodeGlobal.ELEMENT_NODE) {
     const tagName = sourceNode.tagName.toUpperCase();
 
     // MDN specific cleaning: remove copy button and play links
-    if (sourceNode.classList.contains('mdn-copy-button')) {
+    if (sourceNode.classList && sourceNode.classList.contains('mdn-copy-button')) {
       return;
     }
     if (
@@ -79,7 +83,7 @@ function processNode(sourceNode, targetParent) {
     }
 
     if (ALLOWED_TAGS.includes(tagName)) {
-      const newElement = document.createElement(tagName);
+      const newElement = documentGlobal.createElement(tagName);
 
       // Copy allowed attributes
       if (ALLOWED_ATTRIBUTES[tagName]) {
@@ -97,30 +101,24 @@ function processNode(sourceNode, targetParent) {
         processNode(child, newElement);
       });
     } else {
-      // If tag is not allowed, check if we should unwrap it or drop it.
-      // For safety, we should drop dangerous tags like SCRIPT, STYLE, IFRAME, OBJECT, EMBED, etc.
-      // But for "paste-html-subset" behavior, we usually unwrap structural tags (div, span)
-      // and drop dangerous ones.
-
       const DANGEROUS_TAGS = ['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'LINK', 'META'];
 
-      if (!DANGEROUS_TAGS.includes(tagName)) {
-        // Unwrap safe-ish tags (like div, span)
+      if (!DANGEROUS_TAGS.includes(tagName) || tagName === 'BODY' || tagName === 'HTML') {
+        // Unwrap safe-ish tags (like div, span, body, html)
         Array.from(sourceNode.childNodes).forEach(child => {
           processNode(child, targetParent);
         });
       }
-      // If dangerous, do nothing (drop it and its children)
     }
   }
 }
 
 export function removeStyleAttributes(html) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(html, 'text/html');
-  const allElements = doc.body.getElementsByTagName('*');
+  const doc = parseHTMLGlobal(html);
+  const body = doc.body;
+  const allElements = body.querySelectorAll('*');
   for (let i = 0; i < allElements.length; i++) {
     allElements[i].removeAttribute('style');
   }
-  return doc.body.innerHTML;
+  return body.innerHTML;
 }
