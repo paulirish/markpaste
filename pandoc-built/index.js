@@ -8,8 +8,8 @@ const {WASI, OpenFile, File, ConsoleStdout, PreopenDirectory} = WasiShim;
 
 const args = ['pandoc.wasm', '+RTS', '-H64m', '-RTS'];
 const env = [];
-const in_file = new File(new Uint8Array(), {readonly: true});
-const out_file = new File(new Uint8Array(), {readonly: false});
+let in_file = new File(new Uint8Array(), {readonly: true});
+let out_file = new File(new Uint8Array(), {readonly: false});
 const fds = [
   new OpenFile(new File(new Uint8Array(), {readonly: true})),
   ConsoleStdout.lineBuffered(msg => console.log(`[WASI stdout] ${msg}`)),
@@ -23,12 +23,12 @@ const fds = [
   ),
 ];
 const options = {debug: false};
-const wasi = new WASI(args, env, fds, options);
+let wasi = new WASI(args, env, fds, options);
 
 const source = await WebAssembly.instantiateStreaming(fetch('/pandoc-built/pandoc.wasm'), {
   wasi_snapshot_preview1: wasi.wasiImport,
 });
-const instance = /** @type {PandocWasm.PandocWasmInstance} */ (source.instance);
+let instance = /** @type {PandocWasm.PandocWasmInstance} */ (source.instance);
 
 wasi.initialize(instance);
 instance.exports.__wasm_call_ctors();
@@ -58,4 +58,11 @@ export function pandoc(args_str, in_str) {
   in_file.data = new TextEncoder().encode(in_str);
   instance.exports.wasm_main(args_ptr, args_str.length);
   return new TextDecoder('utf-8', {fatal: true}).decode(out_file.data);
+}
+
+export function dispose() {
+  in_file = null;
+  out_file = null;
+  wasi = null;
+  instance = null;
 }

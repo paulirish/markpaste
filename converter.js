@@ -61,6 +61,9 @@ async function getPandocConverter() {
       const markdown = pandocModule.pandoc(args, html);
       return markdown;
     },
+    dispose: () => {
+      pandocModule.dispose();
+    }
   };
 }
 

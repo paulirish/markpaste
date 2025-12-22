@@ -92,7 +92,42 @@ async function init() {
   // Initialize all converters
   await convertersPromise;
 
+  // Setup Idle Detection
+  if ('IdleDetector' in window) {
+    try {
+      const controller = new AbortController();
+      const signal = controller.signal;
 
+      const idleDetector = new IdleDetector();
+      idleDetector.addEventListener('change', () => {
+        const userState = idleDetector.userState;
+        const screenState = idleDetector.screenState;
+        console.log(`Idle change: ${userState}, ${screenState}`);
+
+        if (userState === 'idle') {
+          // Unload pandoc if it exists
+          if (converters.pandoc) {
+             console.log('User is idle. Unloading pandoc module to free memory.');
+             if (converters.pandoc.dispose) {
+               converters.pandoc.dispose();
+             }
+             delete converters.pandoc;
+          }
+        }
+      });
+
+      // 10 minutes = 600,000 ms
+      idleDetector.start({
+        threshold: 600000,
+        signal,
+      }).catch(err => {
+         console.warn('Idle detection start failed:', err);
+      });
+
+    } catch (err) {
+      console.warn('Idle detection setup failed:', err);
+    }
+  }
 
   // Initial process if there's content (e.g. from reload, though usually empty)
   if (inputArea.innerHTML) {
