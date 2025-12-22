@@ -2,8 +2,8 @@
 
 ## Phase 1: Environment & Dependencies
 - [x] Task: Install dependencies (`linkedom`, `turndown`, `turndown-plugin-gfm`, `to-markdown`, `@types/node`). 96cf1d4
-- [~] Task: Update `package.json` scripts to include `test:node` using native Node.js runner (`node --test`).
-- [~] Task: Create `tests/node/` directory and a basic "hello world" test to verify runner setup.
+- [x] Task: Update `package.json` scripts to include `test:node` using native Node.js runner (`node --test`). 96cf1d4
+- [x] Task: Create `tests/node/` directory and a basic "hello world" test to verify runner setup. 6c3703d
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Environment & Dependencies' (Protocol in workflow.md)
 
 ## Phase 2: Refactoring Core Modules (Cleaner & Converter)
