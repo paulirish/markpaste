@@ -142,7 +142,7 @@ function setupEventListeners() {
 
   copyBtn.on('click', copyToClipboard);
 
-  themeToggle.on('click', toggleTheme);
+  // themeToggle.on('click', toggleTheme);
 
   cleanHtmlToggle.on('change', () => {
     if (lastProcessedContent) {
