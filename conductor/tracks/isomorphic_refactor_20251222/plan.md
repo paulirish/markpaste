@@ -11,10 +11,10 @@
     - [x] Create `tests/node/cleaner.test.js` (Red phase).
     - [x] Implement conditional loading: use `linkedom` in Node, native `DOMParser` in browser.
     - [x] Verify `pnpm test` (Playwright) still passes for browser.
-- [ ] Task: Refactor `converter.js` to use imports.
-    - [ ] Create `tests/node/converter.test.js` (Red phase).
-    - [ ] Replace global/CDN loader logic with dynamic/static imports of installed packages.
-    - [ ] Ensure browser still loads these (likely using ESM paths to `node_modules` or import maps).
+- [x] Task: Refactor `converter.js` to use imports. e072a08
+    - [x] Create `tests/node/converter.test.js` (Red phase).
+    - [x] Replace global/CDN loader logic with dynamic/static imports of installed packages.
+    - [x] Ensure browser still loads these (likely using ESM paths to `node_modules` or import maps).
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Refactoring Core Modules' (Protocol in workflow.md)
 
 ## Phase 3: Isomorphic WASM (Pandoc)
