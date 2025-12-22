@@ -1,10 +1,10 @@
 # Plan: Isomorphic Core Refactor
 
-## Phase 1: Environment & Dependencies
+## Phase 1: Environment & Dependencies [checkpoint: e6fcff7]
 - [x] Task: Install dependencies (`linkedom`, `turndown`, `turndown-plugin-gfm`, `to-markdown`, `@types/node`). 96cf1d4
 - [x] Task: Update `package.json` scripts to include `test:node` using native Node.js runner (`node --test`). 96cf1d4
 - [x] Task: Create `tests/node/` directory and a basic "hello world" test to verify runner setup. 6c3703d
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Environment & Dependencies' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Environment & Dependencies' (Protocol in workflow.md) e6fcff7
 
 ## Phase 2: Refactoring Core Modules (Cleaner & Converter)
 - [ ] Task: Refactor `cleaner.js` to be environment-agnostic.
