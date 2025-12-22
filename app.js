@@ -1,28 +1,17 @@
+console.log('app.js execution started');
 import {cleanHTML, removeStyleAttributes} from './cleaner.js';
 import {renderMarkdown} from './renderer.js';
 import {getConverter} from './converter.js';
+console.log('app.js imports finished');
 
 /* bling.js + guaranteed and typed. Brand new in Nov 2025. */
-/**
- * Guaranteed context.querySelector. Always returns an element or throws if nothing matches query.
- * @template {string} T
- * @param {T} query
- * @param {ParentNode=} context
- * @return {import('typed-query-selector/parser.js').ParseSelector<T, Element>}
- */
 window.$ = function (query, context) {
   const result = (context || document).querySelector(query);
   if (result === null) {
     throw new Error(`query ${query} not found`);
   }
-  return /** @type {import('typed-query-selector/parser.js').ParseSelector<T, Element>} */ (result);
+  return result;
 };
-/**
- * @template {string} T
- * @param {T} query
- * @param {ParentNode=} context
- * @return {NodeListOf<import('typed-query-selector/parser.js').ParseSelector<T, Element>>}
- */
 window.$$ = (query, context) => (context || document).querySelectorAll(query);
 
 Node.prototype.on = window.on = function (name, fn) {
@@ -35,35 +24,34 @@ NodeList.prototype.on = function (name, fn) {
 };
 // Bling'ed out.
 
-const {$} = window;
-const {$$} = window;
+const {$ } = window;
 
-const inputArea = $('div#inputArea');
-const htmlCode = $('code#htmlCode');
-const copyBtn = $('button#copyBtn');
-const themeToggle = $('button#themeToggle');
-const cleanHtmlToggle = $('input#cleanHtmlToggle');
+const inputArea = $("div#inputArea");
+const htmlCode = $("code#htmlCode");
+const copyBtn = $("button#copyBtn");
+const themeToggle = $("button#themeToggle");
+const cleanHtmlToggle = $("input#cleanHtmlToggle");
 
 // View Toggle
-const viewMarkdownBtn = $('button#viewMarkdownBtn');
-const viewRenderedBtn = $('button#viewRenderedBtn');
+const viewMarkdownBtn = $("button#viewMarkdownBtn");
+const viewRenderedBtn = $("button#viewRenderedBtn");
 
 // Output Elements
 const outputs = {
   turndown: {
-    code: $('code#outputCodeTurndown'),
-    preview: $('div#renderPreviewTurndown'),
-    pre: $('pre#outputPreTurndown'),
+    code: $("code#outputCodeTurndown"),
+    preview: $("div#renderPreviewTurndown"),
+    pre: $("pre#outputPreTurndown"),
   },
   'to-markdown': {
-    code: $('code#outputCodeToMarkdown'),
-    preview: $('div#renderPreviewToMarkdown'),
-    pre: $('pre#outputPreToMarkdown'),
+    code: $("code#outputCodeToMarkdown"),
+    preview: $("div#renderPreviewToMarkdown"),
+    pre: $("pre#outputPreToMarkdown"),
   },
   pandoc: {
-    code: $('code#outputCodePandoc'),
-    preview: $('div#renderPreviewPandoc'),
-    pre: $('pre#outputPrePandoc'),
+    code: $("code#outputCodePandoc"),
+    preview: $("div#renderPreviewPandoc"),
+    pre: $("pre#outputPrePandoc"),
   },
 };
 
@@ -77,20 +65,28 @@ const convertersPromise = Promise.all([
   converters.turndown = turndown;
   converters['to-markdown'] = toMarkdown;
   converters.pandoc = pandoc;
+  console.log('Converters loaded successfully');
 }).catch(e => {
   console.error("Failed to load converters", e);
+  throw e;
 });
 
 let currentView = 'markdown'; // 'markdown' or 'rendered'
 
 async function init() {
-
+  console.log('init() started');
   setupEventListeners();
 
   loadTheme();
 
   // Initialize all converters
-  await convertersPromise;
+  try {
+    console.log('awaiting convertersPromise...');
+    await convertersPromise;
+    console.log('convertersPromise resolved');
+  } catch (e) {
+    console.error('Initialization failed during converter loading', e);
+  }
 
   // Setup Idle Detection
   if ('IdleDetector' in window) {
@@ -225,9 +221,11 @@ async function handlePaste(e) {
   }, 2000);
 }
 
-function processContent(html) {
+async function processContent(html) {
+  console.log('processContent called with html length:', html.length);
   const shouldClean = cleanHtmlToggle.checked;
-  const contentToConvert = shouldClean ? cleanHTML(html) : removeStyleAttributes(html);
+  const contentToConvert = shouldClean ? await cleanHTML(html) : await removeStyleAttributes(html);
+  console.log('contentToConvert length:', contentToConvert.length);
 
   // Update HTML Preview
   htmlCode.textContent = formatHTML(contentToConvert);
@@ -236,10 +234,12 @@ function processContent(html) {
   }
 
   // Run all converters
+  console.log('Converters available:', Object.keys(converters));
   for (const [name, converter] of Object.entries(converters)) {
     if (converter) {
       try {
         const markdown = converter.convert(contentToConvert);
+        console.log(`Converter ${name} produced markdown length:`, markdown.length);
         outputs[name].code.textContent = markdown;
         if (window.Prism) {
           window.Prism.highlightElement(outputs[name].code);
@@ -248,6 +248,8 @@ function processContent(html) {
         console.error(`Converter ${name} failed:`, err);
         outputs[name].code.textContent = `Error converting with ${name}: ${err.message}`;
       }
+    } else {
+      console.warn(`Converter ${name} is not loaded yet`);
     }
   }
 
@@ -304,23 +306,9 @@ async function copyToClipboard() {
 
   const textToCopy = outputs[selectedName].code.textContent;
 
-  // For the "Rich HTML", we could either copy the source HTML
-  // OR the rendered HTML from the markdown.
-  // Given the button says "Rich HTML and text Markdown", usually this means
-  // putting the Rendered HTML (from markdown) into the clipboard so pasting into GDocs etc works.
-  // But wait, the user might want the *Cleaned* HTML?
-  // Usually "Rich HTML" in clipboard means the rendered representation.
-  // Let's render it on the fly if needed or grab from preview.
-
-  // Let's generate the HTML to copy from the markdown to ensure it matches the markdown.
-  // We can reuse renderMarkdown logic but we need the string.
-  // Actually renderMarkdown puts it in an element.
-
   // Let's grab the HTML from the preview div if we can, or render it if it's empty.
   let htmlToCopy;
 
-  // We can use the renderer to get the HTML string.
-  // Since renderMarkdown takes an element, let's just make a temp one if needed.
   const tempDiv = document.createElement('div');
   await renderMarkdown(textToCopy, tempDiv);
   htmlToCopy = tempDiv.innerHTML;
@@ -361,14 +349,6 @@ function loadTheme() {
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     document.documentElement.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
   }
-}
-
-function toggleTheme() {
-  const currentTheme = document.documentElement.getAttribute('data-theme');
-  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-
-  document.documentElement.setAttribute('data-theme', newTheme);
-  localStorage.setItem('theme', newTheme);
 }
 
 init();
