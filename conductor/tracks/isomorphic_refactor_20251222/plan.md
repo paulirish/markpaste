@@ -6,16 +6,16 @@
 - [x] Task: Create `tests/node/` directory and a basic "hello world" test to verify runner setup. 6c3703d
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Environment & Dependencies' (Protocol in workflow.md) e6fcff7
 
-## Phase 2: Refactoring Core Modules (Cleaner & Converter)
-- [x] Task: Refactor `cleaner.js` to be environment-agnostic. f0b8888
+## Phase 2: Refactoring Core Modules (Cleaner & Converter) [checkpoint: ab37835]
+- [x] Task: Refactor `cleaner.js` to be environment-agnostic. ab37835
     - [x] Create `tests/node/cleaner.test.js` (Red phase).
     - [x] Implement conditional loading: use `linkedom` in Node, native `DOMParser` in browser.
     - [x] Verify `pnpm test` (Playwright) still passes for browser.
-- [x] Task: Refactor `converter.js` to use imports. e072a08
+- [x] Task: Refactor `converter.js` to use imports. ab37835
     - [x] Create `tests/node/converter.test.js` (Red phase).
     - [x] Replace global/CDN loader logic with dynamic/static imports of installed packages.
     - [x] Ensure browser still loads these (likely using ESM paths to `node_modules` or import maps).
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Refactoring Core Modules' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Refactoring Core Modules' (Protocol in workflow.md) ab37835
 
 ## Phase 3: Isomorphic WASM (Pandoc)
 - [ ] Task: Abstract the WASM file loader in `pandoc-built/index.js`.
