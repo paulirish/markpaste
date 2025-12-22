@@ -7,10 +7,10 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Environment & Dependencies' (Protocol in workflow.md) e6fcff7
 
 ## Phase 2: Refactoring Core Modules (Cleaner & Converter)
-- [ ] Task: Refactor `cleaner.js` to be environment-agnostic.
-    - [ ] Create `tests/node/cleaner.test.js` (Red phase).
-    - [ ] Implement conditional loading: use `linkedom` in Node, native `DOMParser` in browser.
-    - [ ] Verify `pnpm test` (Playwright) still passes for browser.
+- [x] Task: Refactor `cleaner.js` to be environment-agnostic. f0b8888
+    - [x] Create `tests/node/cleaner.test.js` (Red phase).
+    - [x] Implement conditional loading: use `linkedom` in Node, native `DOMParser` in browser.
+    - [x] Verify `pnpm test` (Playwright) still passes for browser.
 - [ ] Task: Refactor `converter.js` to use imports.
     - [ ] Create `tests/node/converter.test.js` (Red phase).
     - [ ] Replace global/CDN loader logic with dynamic/static imports of installed packages.
