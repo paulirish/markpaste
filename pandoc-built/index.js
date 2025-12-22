@@ -1,8 +1,15 @@
 /** @import * as PandocWasm from '../pandoc-wasm.js' */
 /** @import * as WasiShimT from '@bjorn3/browser_wasi_shim' */
 
-// @ts-ignore
-import * as WasiShim from 'https://cdn.jsdelivr.net/npm/@bjorn3/browser_wasi_shim@0.3.0/dist/index.js';
+const isBrowser = typeof window !== 'undefined';
+
+let WasiShim;
+if (isBrowser) {
+  WasiShim = await import('@bjorn3/browser_wasi_shim');
+} else {
+  WasiShim = await import('@bjorn3/browser_wasi_shim');
+}
+
 /** @type {WasiShimT} */
 const {WASI, OpenFile, File, ConsoleStdout, PreopenDirectory} = WasiShim;
 
@@ -25,9 +32,27 @@ const fds = [
 const options = {debug: false};
 let wasi = new WASI(args, env, fds, options);
 
-const source = await WebAssembly.instantiateStreaming(fetch('/pandoc-built/pandoc.wasm'), {
-  wasi_snapshot_preview1: wasi.wasiImport,
-});
+async function loadWasm() {
+  if (isBrowser) {
+    const response = await fetch('/pandoc-built/pandoc.wasm');
+    const bytes = await response.arrayBuffer();
+    return await WebAssembly.instantiate(bytes, {
+      wasi_snapshot_preview1: wasi.wasiImport,
+    });
+  } else {
+    const fs = await import('node:fs');
+    const path = await import('node:path');
+    const { fileURLToPath } = await import('node:url');
+    const __dirname = path.dirname(fileURLToPath(import.meta.url));
+    const wasmPath = path.join(__dirname, 'pandoc.wasm');
+    const bytes = fs.readFileSync(wasmPath);
+    return await WebAssembly.instantiate(bytes, {
+      wasi_snapshot_preview1: wasi.wasiImport,
+    });
+  }
+}
+
+const source = await loadWasm();
 let instance = /** @type {PandocWasm.PandocWasmInstance} */ (source.instance);
 
 wasi.initialize(instance);
