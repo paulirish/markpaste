@@ -4,4 +4,5 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-
+## [~] Track: Isomorphic Core Refactor
+*Link: [./conductor/tracks/isomorphic_refactor_20251222/](./conductor/tracks/isomorphic_refactor_20251222/)*

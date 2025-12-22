@@ -2,7 +2,7 @@ import {test, expect} from '@playwright/test';
 
 test.describe('MarkPaste functionality', () => {
   test.beforeEach(async ({page}) => {
-    await page.goto('http://127.0.0.1:8080/index.html');
+    await page.goto('http://127.0.0.1:8081/index.html');
   });
 
   test('should convert basic rich text to markdown', async ({page}) => {
