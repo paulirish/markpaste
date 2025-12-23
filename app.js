@@ -55,7 +55,7 @@ function toggleTheme() {
   localStorage.setItem('theme', newTheme);
 }
 
-const {$ } = window;
+const {$, $$ } = window;
 
 const inputArea = $('div#inputArea');
 const htmlCode = $('code#htmlCode');
@@ -243,6 +243,9 @@ async function handlePaste(e) {
   const content = pastedHtml || pastedText;
   lastProcessedContent = content;
   processContent(content);
+
+  // Reset scroll position for all pre elements
+  $$('pre').forEach(pre => pre.scrollTop = 0);
 
   inputArea.innerHTML = '';
   inputArea.setAttribute('placeholder', 'Pasted! Ready for more...');
