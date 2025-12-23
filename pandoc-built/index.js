@@ -1,3 +1,8 @@
+/**
+ * Adapted from https://github.com/haskell-wasm/pandoc-wasm
+ * See README.md for more details about the pandoc WASM integration.
+ */
+
 /** @import * as PandocWasm from '../pandoc-wasm.js' */
 /** @import * as WasiShimT from '@bjorn3/browser_wasi_shim' */
 
