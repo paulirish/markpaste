@@ -1,7 +1,7 @@
 # Product Guide
 
 ## # Initial Concept
-MarkPaste is a web-based utility designed to serve as a comprehensive tool for HTML and Markdown manipulations. It aims to streamline the workflow for developers and LLM users who frequently need to convert, clean, and format rich text and code snippets.
+MarkPaste is an isomorphic utility and library designed to serve as a comprehensive tool for HTML and Markdown manipulations, runnable in both web browsers and Node.js environments. It aims to streamline the workflow for developers and LLM users who frequently need to convert, clean, and format rich text and code snippets.
 
 ## Target Audience
 - **Developers:** Professionals who need to quickly convert documentation, code blocks, or rich text content into clean Markdown for use in repositories, issue trackers, or documentation sites.
@@ -12,7 +12,8 @@ MarkPaste evolves beyond simple conversion by offering a suite of tools for cont
 
 ## Key Features & Goals
 - **Robust Rich Text to Markdown:** Reliable conversion that preserves essential formatting while discarding unnecessary artifacts.
+- **Programmatic API:** A clean, environment-agnostic API for Node.js users to integrate MarkPaste logic into scripts and backends.
 - **HTML Cleaning & Sanitization:** dedicated tools to strip unwanted styles, scripts, and classes, producing "clean" HTML that is safe and easy to work with.
 - **LLM-Ready Output:** Optimization of output for AI context windows, ensuring clarity and minimal token usage.
 - **Visual Feedback:** Real-time preview of both the intermediate HTML and the final Markdown to ensure accuracy.
-- **Developer-Centric UX:** A fast, responsive, and local-first web interface that respects privacy and workflow speed.
+- **Developer-Centric UX:** A fast, responsive, and local-first interface (Web UI or Node library) that respects privacy and workflow speed.
