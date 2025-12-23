@@ -25,8 +25,8 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 3: Isomorphic WASM' (Protocol in workflow.md) 1d337bc
 
 ## Phase 4: Library Entry Point & Final Verification
-- [ ] Task: Create `index.js` (Library Entry Point).
-    - [ ] Export `convert` and `cleanHTML` functions clearly.
+- [x] Task: Create `index.js` (Library Entry Point). 07df471
+    - [x] Export `convert` and `cleanHTML` functions clearly.
 - [ ] Task: Run full regression suite.
     - [ ] `npm run test:node` (All Node tests).
     - [ ] `pnpm test` (All Browser Playwright tests).
