@@ -111,6 +111,19 @@ async function init() {
   // Initialize all converters
   await convertersPromise;
 
+  // Initial process if there's content (e.g. from reload, though usually empty)
+  if (inputArea.innerHTML) {
+    lastProcessedContent = inputArea.innerHTML;
+    processContent(lastProcessedContent);
+  }
+}
+
+let idleDetectorInitialized = false;
+
+async function startIdleDetector() {
+  if (idleDetectorInitialized) return;
+  idleDetectorInitialized = true;
+
   // Setup Idle Detection
   if ('IdleDetector' in window) {
     try {
@@ -146,12 +159,6 @@ async function init() {
     } catch (err) {
       console.warn('Idle detection setup failed:', err);
     }
-  }
-
-  // Initial process if there's content (e.g. from reload, though usually empty)
-  if (inputArea.innerHTML) {
-    lastProcessedContent = inputArea.innerHTML;
-    processContent(lastProcessedContent);
   }
 }
 
@@ -318,6 +325,8 @@ function formatHTML(html) {
 }
 
 async function copyToClipboard() {
+  startIdleDetector();
+
   const selectedRadio = $('input[name="converter"]:checked');
   const selectedName = selectedRadio ? selectedRadio.value : 'turndown';
 
