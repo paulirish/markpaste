@@ -14,6 +14,7 @@ declare global {
     };
   }
 
+  // bling.js
   interface Node {
     on(name: string, fn: EventListenerOrEventListenerObject): void;
   }
@@ -27,5 +28,20 @@ declare global {
   interface NodeList extends Array<Node> {
     on(name: string, fn: EventListenerOrEventListenerObject): void;
   }
+
+
+  // idle detector
+
+  interface IdleDetector {
+    addEventListener(type: "change", listener: (this: IdleDetector, ev: { userState: "active" | "idle", screenState: "locked" | "unlocked" }) => unknown, options?: boolean | AddEventListenerOptions): void;
+    start(options: { threshold: number }): Promise<void>;
+    screenState: "locked" | "unlocked";
+    userState: "active" | "idle";
+  }
+
+  declare const IdleDetector: {
+      new(): IdleDetector;
+      requestPermission(): Promise<"granted" | "denied">;
+  };
 }
 /// <reference path="pandoc-wasm.d.ts" />
