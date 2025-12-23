@@ -1,5 +1,5 @@
 /**
- * index.js
+ * markpaste.js
  * MarkPaste Library Entry Point
  */
 
@@ -19,7 +19,7 @@ export async function convert(html, options = {}) {
 
   const cleanedHtml = clean ? await cleanHTML(html) : await removeStyleAttributes(html);
   const converter = await getConverter(converterName);
-  
+
   return converter.convert(cleanedHtml);
 }
 

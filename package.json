@@ -3,13 +3,14 @@
   "private": true,
   "version": "0.0.1",
   "description": "",
-  "main": "app.js",
+  "main": "src/markpaste.js",
   "scripts": {
     "start": "npx statikk --port 7025",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
-    "test": "playwright test",
-    "test:node": "node --test tests/node/**/*.test.js"
+    "test": "pnpm run typecheck && pnpm run test:node && pnpm run test:web",
+    "test:web": "playwright test",
+    "test:node": "node --test test/node/**/*.test.js"
   },
   "packageManager": "pnpm@10.22.0",
   "engines": {

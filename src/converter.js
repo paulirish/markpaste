@@ -41,14 +41,14 @@ async function getToMarkdownConverter() {
   } else {
     toMarkdown = (await import('to-markdown')).default;
   }
-  
+
   return {
     convert: html => toMarkdown(html),
   };
 }
 
 async function getPandocConverter() {
-  const pandocModule = await import('./pandoc-built/index.js');
+  const pandocModule = await import('./pandoc.js');
   return {
     convert: html => {
       const args = '--from html --to gfm --no-highlight --wrap=preserve';

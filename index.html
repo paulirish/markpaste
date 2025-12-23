@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MarkPaste - Rich Text to Markdown - PasteMark</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="src/style.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -150,18 +150,18 @@
   <script type="importmap">
     {
       "imports": {
-        "marked": "./node_modules/marked/lib/marked.esm.js",
-        "turndown": "./node_modules/turndown/lib/turndown.es.js",
-        "turndown-plugin-gfm": "./node_modules/turndown-plugin-gfm/lib/turndown-plugin-gfm.es.js",
-        "to-markdown": "./to-markdown-shim.js",
-        "@bjorn3/browser_wasi_shim": "./node_modules/@bjorn3/browser_wasi_shim/dist/index.js"
+        "marked": "/node_modules/marked/lib/marked.esm.js",
+        "turndown": "/node_modules/turndown/lib/turndown.es.js",
+        "turndown-plugin-gfm": "/node_modules/turndown-plugin-gfm/lib/turndown-plugin-gfm.es.js",
+        "to-markdown": "./src/to-markdown-shim.js",
+        "@bjorn3/browser_wasi_shim": "/node_modules/@bjorn3/browser_wasi_shim/dist/index.js"
       }
     }
   </script>
   <!-- Scripts -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-markdown.min.js"></script>
-  <script type="module" src="app.js"></script>
+  <script type="module" src="src/app.js"></script>
   
   <div id="markdown-tooltip" popover="hint"></div>
 </body>

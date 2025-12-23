@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert';
-import { getConverter } from '../../converter.js';
+import { getConverter } from '../../src/converter.js';
 
 test('pandoc: converter should convert HTML to Markdown', async () => {
   const converter = await getConverter('pandoc');

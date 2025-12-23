@@ -88,17 +88,16 @@ const outputs = {
 
 let lastProcessedContent = '';
 const converters = {};
-const convertersPromise = Promise.all([
-  getConverter('turndown'),
-  getConverter('to-markdown'),
-  getConverter('pandoc')
-]).then(([turndown, toMarkdown, pandoc]) => {
-  converters.turndown = turndown;
-  converters['to-markdown'] = toMarkdown;
-  converters.pandoc = pandoc;
-}).catch(e => {
-  console.error("Failed to load converters", e);
-});
+const convertersPromise = (async () => {
+  const names = ['turndown', 'to-markdown', 'pandoc'];
+  for (const name of names) {
+    try {
+      converters[name] = await getConverter(name);
+    } catch (e) {
+      console.error(`Failed to load converter: ${name}`, e);
+    }
+  }
+})();
 
 let currentView = 'markdown'; // 'markdown' or 'rendered'
 

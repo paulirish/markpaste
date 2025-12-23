@@ -3,7 +3,7 @@
  * See README.md for more details about the pandoc WASM integration.
  */
 
-/** @import * as PandocWasm from '../pandoc-wasm.js' */
+/** @import * as PandocWasm from '../types/pandoc-wasm.js' */
 /** @import * as WasiShimT from '@bjorn3/browser_wasi_shim' */
 
 const isBrowser = typeof window !== 'undefined';
@@ -39,7 +39,7 @@ let wasi = new WASI(args, env, fds, options);
 
 async function loadWasm() {
   if (isBrowser) {
-    const response = await fetch('/pandoc-built/pandoc.wasm');
+    const response = await fetch('third_party/pandoc.wasm');
     const bytes = await response.arrayBuffer();
     return await WebAssembly.instantiate(bytes, {
       wasi_snapshot_preview1: wasi.wasiImport,
@@ -49,7 +49,7 @@ async function loadWasm() {
     const path = await import('node:path');
     const { fileURLToPath } = await import('node:url');
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
-    const wasmPath = path.join(__dirname, 'pandoc.wasm');
+    const wasmPath = path.join(__dirname, '..', 'third_party', 'pandoc.wasm');
     const bytes = fs.readFileSync(wasmPath);
     return await WebAssembly.instantiate(bytes, {
       wasi_snapshot_preview1: wasi.wasiImport,

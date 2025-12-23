@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert';
-import { convert } from '../../index.js';
+import { convert } from '../../src/markpaste.js';
 
 test('library: convert should use turndown by default', async () => {
   const html = '<h1>Hello</h1>';

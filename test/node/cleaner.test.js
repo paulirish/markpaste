@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert';
-import { cleanHTML, removeStyleAttributes } from '../../cleaner.js';
+import { cleanHTML, removeStyleAttributes } from '../../src/cleaner.js';
 
 test('cleaner: cleanHTML should remove disallowed tags', async () => {
   const html = '<div><p>Hello</p><script>alert(1)</script><span>World</span></div>';
