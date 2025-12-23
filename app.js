@@ -15,7 +15,7 @@ window.$ = function (query, context) {
   if (result === null) {
     throw new Error(`query ${query} not found`);
   }
-  return result;
+   return /** @type {import('typed-query-selector/parser.js').ParseSelector<T, Element>} */ (result);
 };
 /**
  * @template {string} T
@@ -342,6 +342,9 @@ async function copyToClipboard() {
   await renderMarkdown(textToCopy, tempDiv);
   htmlToCopy = tempDiv.innerHTML;
 
+  // Store original text for restoration
+  const originalText = copyBtn.innerHTML;
+
   try {
     const items = {
       'text/plain': new Blob([textToCopy], {type: 'text/plain'})
@@ -353,7 +356,6 @@ async function copyToClipboard() {
     await navigator.clipboard.write([cpItem]);
 
     // Visual feedback
-    const originalText = copyBtn.innerHTML;
     copyBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied (${selectedName})!`;
     copyBtn.classList.add('success');
 
