@@ -24,10 +24,10 @@
     - [x] Ensure `@bjorn3/browser_wasi_shim` works in Node context.
 - [x] Task: Conductor - User Manual Verification 'Phase 3: Isomorphic WASM' (Protocol in workflow.md) 1d337bc
 
-## Phase 4: Library Entry Point & Final Verification
+## Phase 4: Library Entry Point & Final Verification [checkpoint: f7f53e8]
 - [x] Task: Create `index.js` (Library Entry Point). 07df471
     - [x] Export `convert` and `cleanHTML` functions clearly.
-- [ ] Task: Run full regression suite.
-    - [ ] `npm run test:node` (All Node tests).
-    - [ ] `pnpm test` (All Browser Playwright tests).
-- [ ] Task: Conductor - User Manual Verification 'Phase 4: Library Entry Point & Final Verification' (Protocol in workflow.md)
+- [x] Task: Run full regression suite. fc26ad6
+    - [x] `npm run test:node` (All Node tests).
+    - [x] `pnpm test` (All Browser Playwright tests).
+- [x] Task: Conductor - User Manual Verification 'Phase 4: Library Entry Point & Final Verification' (Protocol in workflow.md) f7f53e8
