@@ -1,0 +1,12 @@
+
+playwright-report/
+test-results/
+
+.pnpm-store
+node_modules
+
+.claude/
+agent_notes.md
+findings.md
+
+conductor/

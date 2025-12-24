@@ -1,7 +1,7 @@
 {
   "name": "markpaste",
   "version": "0.0.1",
-  "description": "",
+  "description": "HTML and Markdown, perfected for pasting into documents, emails, and more. So isomorphic. lol.",
   "main": "src/markpaste.js",
   "scripts": {
     "start": "npx statikk --port 7025",
