@@ -2,7 +2,7 @@ import {test, expect} from '@playwright/test';
 
 test.describe('Cleaner functionality', () => {
   test.beforeEach(async ({page}) => {
-    await page.goto('http://127.0.0.1:8080/index.html');
+    await page.goto('http://127.0.0.1:8081/index.html');
   });
 
   test('should remove MDN copy button and play links', async ({page}) => {
@@ -22,7 +22,7 @@ test.describe('Cleaner functionality', () => {
       inputArea.dispatchEvent(new Event('input', {bubbles: true}));
     }, html);
 
-    const outputCode = page.locator('#outputCode');
+    const outputCode = page.locator('#outputCodeTurndown');
 
     await expect(outputCode).not.toContainText('Copy');
     await expect(outputCode).not.toContainText('Play in MDN');

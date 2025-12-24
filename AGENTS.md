@@ -1,29 +1,28 @@
 ## Project Overview
 
-MarkPaste is a web-based utility for converting rich text to Markdown. The core technologies are HTML, CSS, and JavaScript, with Playwright for testing. The application's logic is contained in `app.js`, `cleaner.js`, and `converter.js`.
+MarkPaste is a web-based utility for converting rich text to Markdown. The core technologies are HTML, CSS, and JavaScript, with Playwright for testing.
 
 ## File Structure
 
-The key files in the project are:
+- Browser source files:
+  - `index.html`
+  - `src/style.css`
+  - `src/app.js`: The main browser JS containing the application's logic.
 
-- `index.html`
-- `style.css`
-- `app.js`: The main JavaScript file containing the application's logic.
-- `cleaner.js`: Contains the logic for cleaning the HTML.
-- `converter.js`: Contains the logic for converting HTML to Markdown.
-- `tests/pasting.spec.ts`: The Playwright test file.
-- `package.json`: The project's manifest file. PNPM is the preferred package manager
+- Node and web compatible library code:
+  - `src/cleaner.js`: The logic for cleaning the HTML.
+  - `src/converter.js`: The logic for converting HTML to Markdown.
+
+- `src/markpaste.js`: The library entry point. (for node or bundling)
+
+- Also:
+  - `test/web/`: Playwright tests for core application functionality.
+  - `test/node/`: Node.js unit tests for library logic.
+  - `third_party/`: External assets like `pandoc.wasm`.
+  - `package.json`: The project's manifest file. PNPM is the preferred package manager.
 
 ## Testing
 
-While `pnpm test` will run all tests.. sometimes you'll want to run only specific tests…
+The project uses a tiered testing approach:
 
-Run a specific test file:
-```sh
-pnpm test tests/cleaner.spec.ts
-```
-
-Run a specific test case (by name):
-```sh
-pnpm test -g "should clean HTML"
-```
+- `pnpm test`: Runs a typecheck and then both Node.js unit tests (`pnpm test:node`) and Playwright web tests (`pnpm test:web test/web/*`)

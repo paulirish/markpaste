@@ -3,12 +3,14 @@
   "private": true,
   "version": "0.0.1",
   "description": "",
-  "main": "app.js",
+  "main": "src/markpaste.js",
   "scripts": {
     "start": "npx statikk --port 7025",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
-    "test": "playwright test"
+    "test": "pnpm run typecheck && pnpm run test:node && pnpm run test:web",
+    "test:web": "playwright test",
+    "test:node": "node --test test/node/**/*.test.js"
   },
   "packageManager": "pnpm@10.22.0",
   "engines": {
@@ -17,7 +19,7 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
+  "license": "Apache-2.0",
   "type": "module",
   "devDependencies": {
     "@playwright/test": "^1.57.0",
@@ -29,6 +31,10 @@
   },
   "dependencies": {
     "@bjorn3/browser_wasi_shim": "^0.4.2",
-    "marked": "^17.0.1"
+    "@types/node": "^25.0.3",
+    "linkedom": "^0.18.12",
+    "marked": "^17.0.1",
+    "turndown": "^7.2.2",
+    "turndown-plugin-gfm": "^1.0.2"
   }
 }

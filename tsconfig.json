@@ -9,7 +9,9 @@
 
     "noEmit": true,
     "allowJs": true,
-    "checkJs": true
+    "checkJs": true,
+    "skipLibCheck": true
   },
-  "include": ["**/*.js", "globals.d.ts"]
+  "include": ["src/**/*.js", "types/**/*.d.ts", "test/**/*.ts", "test/**/*.js"],
+  "exclude": ["node_modules/linkedom"]
 }

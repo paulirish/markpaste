@@ -52,6 +52,10 @@ The project uses Playwright for end-to-end testing. To run the tests:
 pnpm test
 ```
 
+## Pandoc WASM
+
+The `pandoc.wasm` and `pandoc.js` files used in this project originate from the [haskell-wasm/pandoc-wasm](https://github.com/haskell-wasm/pandoc-wasm) project. Since GitHub Actions artifacts are cleaned up after ~90 days and the upstream repository hadn't run its CI recently, a [fork](https://github.com/paulirish/pandoc-wasm) was created to generate fresh build artifacts. The files in this project were obtained from that fork's GitHub Actions build artifacts.
+
 ## Contributing
 
 Contributions are welcome! Please feel free to submit a pull request or open an issue for any bugs or feature requests.
