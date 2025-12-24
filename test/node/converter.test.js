@@ -21,6 +21,6 @@ test('converter: unknown converter should throw error', async () => {
   await assert.rejects(async () => {
     await getConverter('non-existent');
   }, {
-    message: 'Unknown converter: non-existent'
+    message: 'Unknown converter: non-existent. Available converters: turndown, to-markdown, pandoc'
   });
 });

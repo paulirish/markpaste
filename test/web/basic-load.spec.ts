@@ -38,3 +38,43 @@ test('should load the page without errors or 404s', async ({ page }) => {
   // Basic check that the page rendered
   await expect(page.locator('h1')).toHaveText('MarkPaste');
 });
+
+test('should paste HTML and update all 3 markdown outputs', async ({ page }) => {
+  await page.goto('http://127.0.0.1:8081/index.html');
+
+  const inputArea = page.locator('#inputArea');
+  const testHtml = '<h1>Test Title</h1><p>Hello <strong>world</strong></p>';
+
+  // Simulate paste event
+  await page.evaluate((html) => {
+    const el = document.querySelector('#inputArea');
+    if (!el) return;
+    const dataTransfer = new DataTransfer();
+    dataTransfer.setData('text/html', html);
+    const event = new ClipboardEvent('paste', {
+      clipboardData: dataTransfer,
+      bubbles: true,
+      cancelable: true,
+    });
+    el.dispatchEvent(event);
+  }, testHtml);
+
+  // Expected markdown (approximate, since different converters might vary slightly)
+  // Turndown: # Test Title\n\nHello **world**
+  // to-markdown: # Test Title\n\nHello **world**
+  // Pandoc: # Test Title\n\nHello **world**
+
+  const outputTurndown = page.locator('#outputCodeTurndown');
+  const outputToMarkdown = page.locator('#outputCodeToMarkdown');
+  const outputPandoc = page.locator('#outputCodePandoc');
+
+  // Wait for all outputs to contain expected content
+  await expect(outputTurndown).toContainText('# Test Title');
+  await expect(outputTurndown).toContainText('Hello **world**');
+
+  await expect(outputToMarkdown).toContainText('# Test Title');
+  await expect(outputToMarkdown).toContainText('Hello **world**');
+
+  await expect(outputPandoc).toContainText('# Test Title');
+  await expect(outputPandoc).toContainText('Hello **world**');
+});
