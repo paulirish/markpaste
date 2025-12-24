@@ -69,7 +69,8 @@ const converters = {
 
 export async function getConverter(name) {
   if (!converters[name]) {
-    throw new Error(`Unknown converter: ${name}`);
+    const available = Object.keys(converters).join(', ');
+    throw new Error(`Unknown converter: ${name}. Available converters: ${available}`);
   }
   return converters[name]();
 }

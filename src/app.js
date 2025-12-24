@@ -342,7 +342,7 @@ async function copyToClipboard() {
   htmlToCopy = tempDiv.innerHTML;
 
   // Store original text for restoration
-  const originalText = copyBtn.innerHTML;
+  const originalText = copyBtn.textContent;
 
   try {
     const items = {

@@ -82,6 +82,21 @@ function processNode(sourceNode, targetParent) {
     }
 
     if (ALLOWED_TAGS.includes(tagName)) {
+      // Special case: UL/OL without LI children (often a bug in clipboard content)
+      // This tweak should only happen when this element is the FIRST element in the received DOM.
+      if ((tagName === 'UL' || tagName === 'OL') && sourceNode.parentNode && sourceNode.parentNode.tagName === 'BODY' && sourceNode.parentNode.firstElementChild === sourceNode) {
+        const hasLiChild = Array.from(sourceNode.childNodes).some(child =>
+          child.nodeType === NodeGlobal.ELEMENT_NODE && child.tagName.toUpperCase() === 'LI'
+        );
+        if (!hasLiChild) {
+          // Unwrap: process children directly into targetParent
+          Array.from(sourceNode.childNodes).forEach(child => {
+            processNode(child, targetParent);
+          });
+          return;
+        }
+      }
+
       const newElement = documentGlobal.createElement(tagName);
 
       // Copy allowed attributes
