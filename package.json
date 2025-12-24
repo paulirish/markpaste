@@ -1,6 +1,5 @@
 {
   "name": "markpaste",
-  "private": true,
   "version": "0.0.1",
   "description": "",
   "main": "src/markpaste.js",
@@ -26,6 +25,7 @@
     "@types/prismjs": "^1.26.5",
     "@types/turndown": "^5.0.6",
     "prettier": "^3.7.3",
+    "statikk": "^2.2.2",
     "typed-query-selector": "^2.12.0",
     "typescript": "^5.9.3"
   },
