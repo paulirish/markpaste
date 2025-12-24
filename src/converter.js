@@ -33,20 +33,6 @@ async function getTurndownConverter() {
   };
 }
 
-async function getToMarkdownConverter() {
-  let toMarkdown;
-  if (isBrowser) {
-    const mod = await import('to-markdown');
-    toMarkdown = mod.default || window.toMarkdown;
-  } else {
-    toMarkdown = (await import('to-markdown')).default;
-  }
-
-  return {
-    convert: html => toMarkdown(html),
-  };
-}
-
 async function getPandocConverter() {
   const pandocModule = await import('./pandoc.js');
   return {
@@ -63,7 +49,6 @@ async function getPandocConverter() {
 
 const converters = {
   turndown: getTurndownConverter,
-  'to-markdown': getToMarkdownConverter,
   pandoc: getPandocConverter,
 };
 

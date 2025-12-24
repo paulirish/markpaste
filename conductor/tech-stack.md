@@ -12,7 +12,6 @@
 - **Marked:** A high-speed Markdown parser and compiler for rendering/processing Markdown.
 - **PrismJS:** Used for robust syntax highlighting in the HTML and Markdown preview panes.
 - **Turndown:** Standard NPM package used for core HTML-to-Markdown conversion.
-- **to-markdown:** Alternative legacy converter for broader compatibility.
 - **linkedom:** Light-weight DOM implementation for Node.js environments.
 
 ## Development & Tooling

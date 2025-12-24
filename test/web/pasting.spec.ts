@@ -51,10 +51,6 @@ test.describe('MarkPaste functionality', () => {
     const turndownOutput = page.locator('#outputCodeTurndown');
     await expect(turndownOutput).toHaveText('### Hello World');
 
-    const toMarkdownOutput = page.locator('#outputCodeToMarkdown');
-    // to-markdown might output differently, usually ## Hello World or similar
-    await expect(toMarkdownOutput).toContainText('Hello World');
-
     const pandocOutput = page.locator('#outputCodePandoc');
     // Pandoc might take a moment
     await expect(pandocOutput).toContainText('Hello World');

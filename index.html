@@ -54,8 +54,8 @@
         </div>
       </section>
 
-      <!-- Bottom: 3 Columns Output -->
-      <section class="section-outputs three-column-grid">
+      <!-- Bottom: 2 Columns Output -->
+      <section class="section-outputs two-column-grid">
         <!-- Turndown -->
         <div class="output-column">
           <div class="panel output-panel">
@@ -67,22 +67,6 @@
               <label class="radio-label">
                 <input type="radio" name="converter" value="turndown" checked />
                 Turndown
-              </label>
-            </div>
-          </div>
-        </div>
-
-        <!-- to-markdown -->
-        <div class="output-column">
-           <div class="panel output-panel">
-            <div class="editor-container output-container">
-              <pre id="outputPreToMarkdown" class="editor"><code id="outputCodeToMarkdown" class="language-markdown"></code></pre>
-              <div id="renderPreviewToMarkdown" class="render-preview hidden"></div>
-            </div>
-            <div class="column-footer">
-              <label class="radio-label">
-                <input type="radio" name="converter" value="to-markdown" />
-                to-markdown
               </label>
             </div>
           </div>
@@ -154,7 +138,6 @@
         "marked": "/node_modules/marked/lib/marked.esm.js",
         "turndown": "/node_modules/turndown/lib/turndown.es.js",
         "turndown-plugin-gfm": "/node_modules/turndown-plugin-gfm/lib/turndown-plugin-gfm.es.js",
-        "to-markdown": "./src/to-markdown-shim.js",
         "@bjorn3/browser_wasi_shim": "/node_modules/@bjorn3/browser_wasi_shim/dist/index.js"
       }
     }

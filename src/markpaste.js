@@ -10,7 +10,7 @@ import { getConverter } from './converter.js';
  * Converts HTML to Markdown using the specified converter.
  * @param {string} html The HTML string to convert.
  * @param {Object} options Configuration options.
- * @param {string} [options.converter='turndown'] The converter to use ('turndown', 'to-markdown', 'pandoc').
+ * @param {string} [options.converter='turndown'] The converter to use ('turndown', 'pandoc').
  * @param {boolean} [options.clean=true] Whether to clean the HTML before conversion.
  * @returns {Promise<string>} The resulting Markdown string.
  */

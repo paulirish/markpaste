@@ -74,11 +74,6 @@ const outputs = {
     preview: $('div#renderPreviewTurndown'),
     pre: $('pre#outputPreTurndown'),
   },
-  'to-markdown': {
-    code: $('code#outputCodeToMarkdown'),
-    preview: $('div#renderPreviewToMarkdown'),
-    pre: $('pre#outputPreToMarkdown'),
-  },
   pandoc: {
     code: $('code#outputCodePandoc'),
     preview: $('div#renderPreviewPandoc'),
@@ -89,7 +84,7 @@ const outputs = {
 let lastProcessedContent = '';
 const converters = {};
 const convertersPromise = (async () => {
-  const names = ['turndown', 'to-markdown', 'pandoc'];
+  const names = ['turndown', 'pandoc'];
   for (const name of names) {
     try {
       converters[name] = await getConverter(name);
