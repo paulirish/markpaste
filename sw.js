@@ -6,8 +6,10 @@
  * The 'activate' event listener will automatically delete old caches that don't match.
  */
 const CACHE_NAME = 'markpaste-v1';
-
-const ASSETS = [
+const LARGE_ASSETS = [
+  '.wasm'
+];
+const CORE_ASSETS = [
   // '/',
   // '/index.html',
   '/src/style.css',
@@ -16,64 +18,81 @@ const ASSETS = [
   '/src/converter.js',
   '/src/renderer.js',
   '/src/pandoc.js',
-  '/third_party/pandoc.wasm'
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Opened cache');
-        return cache.addAll(ASSETS);
-      })
-  );
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    console.log('Opened cache');
+    // Pre-cache core assets. We don't force cache the large WASM here
+    // to keep install fast, it will be cached on first use.
+    return cache.addAll(CORE_ASSETS);
+  })());
 });
 
 self.addEventListener('fetch', (event) => {
-  // Cache-first strategy for the large WASM file and other static assets
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Cache hit - return response
-        if (response) {
-          return response;
-        }
-        return fetch(event.request).then(
-          (response) => {
-            // Check if we received a valid response
-            if (!response || response.status !== 200 || response.type !== 'basic') {
-              return response;
-            }
+  // 1. Handle "only-if-cached" requests (DevTools bug fix)
+  if (event.request.cache === 'only-if-cached' && event.request.mode !== 'same-origin') return;
 
-            const responseToCache = response.clone();
-            caches.open(CACHE_NAME)
-              .then((cache) => {
-                 if (event.request.url.startsWith(self.location.origin)) {
-                     cache.put(event.request, responseToCache);
-                 }
-              });
+  const url = new URL(event.request.url);
+  const isLargeAsset = LARGE_ASSETS.some(asset => url.pathname.endsWith(asset));
 
-            return response;
-          }
-        );
-      })
-  );
+  event.respondWith((async () => {
+    const cachedResponse = await caches.match(event.request);
+
+    if (isLargeAsset) {
+      // STRATEGY: Cache-First (for huge files like WASM)
+      if (cachedResponse) return cachedResponse;
+      return fetchAndCache(event.request);
+    } else {
+      // STRATEGY: Stale-While-Revalidate (for everything else)
+      const fetchPromise = fetchAndCache(event.request);
+
+      // If we found it in cache, return it immediately, fetchPromise updates it in background
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      // Otherwise wait for network
+      return fetchPromise;
+    }
+  })());
 });
 
 self.addEventListener('activate', (event) => {
   const cacheWhitelist = [CACHE_NAME];
-  event.waitUntil(
-    caches.keys().then((cacheNames) => {
-      return Promise.all(
-        cacheNames.map((cacheName) => {
-          if (cacheWhitelist.indexOf(cacheName) === -1) {
-            return caches.delete(cacheName);
-          }
-        })
-      );
-    })
-  );
+  event.waitUntil((async () => {
+    const cacheNames = await caches.keys();
+    await Promise.all(
+      cacheNames.map((cacheName) => {
+        if (!cacheWhitelist.includes(cacheName)) {
+          return caches.delete(cacheName);
+        }
+      })
+    );
+  })());
 });
+
+async function fetchAndCache(request) {
+  const response = await fetch(request);
+
+  // Check for valid response
+  if (!response || response.status !== 200 || response.type !== 'basic') {
+    return response;
+  }
+
+  // Don't cache external resources
+  if (new URL(response.url).origin !== self.location.origin) {
+    return response;
+  }
+
+  // We don't await the cache putting so we don't block the response
+  const responseToCache = response.clone();
+  caches.open(CACHE_NAME).then((cache) => {
+    cache.put(request, responseToCache);
+  });
+
+  return response;
+}
 
 /**
  * HOW TO DELETE THIS SERVICE WORKER:
