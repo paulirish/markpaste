@@ -269,7 +269,7 @@ async function handlePaste(e) {
 
   const content = pastedHtml || pastedText;
   lastProcessedContent = content;
-  
+
   // Use setTimeout to allow UI to update before blocking the thread with conversion
   setTimeout(() => {
     try {
@@ -299,24 +299,68 @@ function processContent(html) {
     window.Prism.highlightElement(htmlCode);
   }
 
-  // Run all converters
-  for (const [name, converter] of Object.entries(converters)) {
-    if (converter) {
-      try {
-        const markdown = converter.convert(contentToConvert);
-        outputs[name].code.textContent = markdown;
-        if (window.Prism) {
-          window.Prism.highlightElement(outputs[name].code);
-        }
-      } catch (err) {
-        console.error(`Converter ${name} failed:`, err);
-        outputs[name].code.textContent = `Error converting with ${name}: ${err.message}`;
+  const results = runConverters(contentToConvert);
+
+  // Update UI with results
+  for (const [name, markdown] of Object.entries(results)) {
+    if (outputs[name]) {
+      outputs[name].code.textContent = markdown;
+      if (window.Prism) {
+        window.Prism.highlightElement(outputs[name].code);
       }
     }
   }
 
+  // Fire and forget the diff check
+  checkDiffs(results);
+
   if (currentView === 'rendered') {
     updateRenderedPreviews();
+  }
+}
+
+function runConverters(htmlContent) {
+  const results = {};
+  for (const [name, converter] of Object.entries(converters)) {
+    if (converter) {
+      try {
+        results[name] = converter.convert(htmlContent);
+      } catch (err) {
+        console.error(`Converter ${name} failed:`, err);
+        results[name] = `Error converting with ${name}: ${err.message}`;
+      }
+    }
+  }
+  return results;
+}
+
+async function checkDiffs(results) {
+  // We need both to be present and not error messages
+  if (!results.turndown || !results.pandoc) return;
+  if (results.turndown.startsWith('Error converting') || results.pandoc.startsWith('Error converting')) return;
+
+  const tDiv = document.createElement('div');
+  const pDiv = document.createElement('div');
+
+  await renderMarkdown(results.turndown, tDiv);
+  await renderMarkdown(results.pandoc, pDiv);
+
+  const turndownHtml = tDiv.innerHTML;
+  const pandocHtml = pDiv.innerHTML;
+  tDiv.innerHTML = pDiv.innerHTML = '';
+
+  if (turndownHtml !== pandocHtml) {
+    let firstDiff = 0;
+    const maxLength = Math.max(turndownHtml.length, pandocHtml.length);
+    while (firstDiff < maxLength && turndownHtml[firstDiff] === pandocHtml[firstDiff]) {
+      firstDiff++;
+    }
+
+    console.group('Converter Diff Discrepancy');
+    console.log(`First difference at index ${firstDiff}:`);
+    console.log(`  Turndown: "...${turndownHtml.substring(firstDiff, firstDiff + 40)}..."`);
+    console.log(`  Pandoc:   "...${pandocHtml.substring(firstDiff, firstDiff + 40)}..."`);
+    console.groupEnd();
   }
 }
 
