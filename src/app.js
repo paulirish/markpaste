@@ -15,7 +15,7 @@ window.$ = function (query, context) {
   if (result === null) {
     throw new Error(`query ${query} not found`);
   }
-   return /** @type {import('typed-query-selector/parser.js').ParseSelector<T, Element>} */ (result);
+  return /** @type {import('typed-query-selector/parser.js').ParseSelector<T, Element>} */ (result);
 };
 /**
  * @template {string} T
@@ -55,7 +55,7 @@ function toggleTheme() {
   localStorage.setItem('theme', newTheme);
 }
 
-const {$, $$ } = window;
+const {$, $$} = window;
 
 const inputArea = $('div#inputArea');
 const htmlCode = $('code#htmlCode');
@@ -98,7 +98,6 @@ const convertersPromise = (async () => {
 let currentView = 'markdown'; // 'markdown' or 'rendered'
 
 async function init() {
-
   setupEventListeners();
 
   loadTheme();
@@ -137,23 +136,24 @@ async function startIdleDetector() {
         if (userState === 'idle') {
           // Unload pandoc if it exists
           if (converters.pandoc) {
-             console.log('User is idle. Unloading pandoc module to free memory.');
-             if (converters.pandoc.dispose) {
-               converters.pandoc.dispose();
-             }
-             delete converters.pandoc;
+            console.log('User is idle. Unloading pandoc module to free memory.');
+            if (converters.pandoc.dispose) {
+              converters.pandoc.dispose();
+            }
+            delete converters.pandoc;
           }
         }
       });
 
       // 10 minutes = 600,000 ms
-      idleDetector.start({
-        threshold: 600000,
-        signal,
-      }).catch(err => {
-         console.warn('Idle detection start failed:', err);
-      });
-
+      idleDetector
+        .start({
+          threshold: 600000,
+          signal,
+        })
+        .catch(err => {
+          console.warn('Idle detection start failed:', err);
+        });
     } catch (err) {
       console.warn('Idle detection setup failed:', err);
     }
@@ -282,7 +282,7 @@ async function handlePaste(e) {
     }
 
     // Reset scroll position for all pre elements
-    $$('pre').forEach(pre => pre.scrollTop = 0);
+    $$('pre').forEach(pre => (pre.scrollTop = 0));
   }, 10);
 
   inputArea.innerHTML = '';
@@ -429,7 +429,7 @@ async function copyToClipboard() {
 
   try {
     const items = {
-      'text/plain': new Blob([textToCopy], {type: 'text/plain'})
+      'text/plain': new Blob([textToCopy], {type: 'text/plain'}),
     };
     if (htmlToCopy) {
       items['text/html'] = new Blob([htmlToCopy], {type: 'text/html'});
@@ -449,7 +449,7 @@ async function copyToClipboard() {
     console.error('Failed to copy:', err);
     copyBtn.textContent = 'Copy failed';
     setTimeout(() => {
-       copyBtn.innerHTML = originalText;
+      copyBtn.innerHTML = originalText;
     }, 2000);
   }
 }

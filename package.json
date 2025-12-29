@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npx statikk --port 7025",
     "typecheck": "tsc --noEmit",
-    "format": "prettier --write .",
+    "format": "prettier --write \"**/*.{js,ts,json,md}\"",
     "test": "pnpm run typecheck && pnpm run test:node && pnpm run test:web",
     "test:web": "playwright test",
     "test:node": "node --test test/node/**/*.test.js"

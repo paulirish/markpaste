@@ -47,7 +47,7 @@ async function loadWasm() {
   } else {
     const fs = await import('node:fs');
     const path = await import('node:path');
-    const { fileURLToPath } = await import('node:url');
+    const {fileURLToPath} = await import('node:url');
     const __dirname = path.dirname(fileURLToPath(import.meta.url));
     const wasmPath = path.join(__dirname, '..', 'third_party', 'pandoc.wasm');
     const bytes = fs.readFileSync(wasmPath);

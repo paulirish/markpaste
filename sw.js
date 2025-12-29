@@ -6,9 +6,7 @@
  * The 'activate' event listener will automatically delete old caches that don't match.
  */
 const CACHE_NAME = 'markpaste-v1';
-const LARGE_ASSETS = [
-  '.wasm'
-];
+const LARGE_ASSETS = ['.wasm'];
 const CORE_ASSETS = [
   // '/',
   // '/index.html',
@@ -20,56 +18,62 @@ const CORE_ASSETS = [
   '/src/pandoc.js',
 ];
 
-self.addEventListener('install', (event) => {
-  event.waitUntil((async () => {
-    const cache = await caches.open(CACHE_NAME);
-    console.log('Opened cache');
-    // Pre-cache core assets. We don't force cache the large WASM here
-    // to keep install fast, it will be cached on first use.
-    return cache.addAll(CORE_ASSETS);
-  })());
+self.addEventListener('install', event => {
+  event.waitUntil(
+    (async () => {
+      const cache = await caches.open(CACHE_NAME);
+      console.log('Opened cache');
+      // Pre-cache core assets. We don't force cache the large WASM here
+      // to keep install fast, it will be cached on first use.
+      return cache.addAll(CORE_ASSETS);
+    })()
+  );
 });
 
-self.addEventListener('fetch', (event) => {
+self.addEventListener('fetch', event => {
   // 1. Handle "only-if-cached" requests (DevTools bug fix)
   if (event.request.cache === 'only-if-cached' && event.request.mode !== 'same-origin') return;
 
   const url = new URL(event.request.url);
   const isLargeAsset = LARGE_ASSETS.some(asset => url.pathname.endsWith(asset));
 
-  event.respondWith((async () => {
-    const cachedResponse = await caches.match(event.request);
+  event.respondWith(
+    (async () => {
+      const cachedResponse = await caches.match(event.request);
 
-    if (isLargeAsset) {
-      // STRATEGY: Cache-First (for huge files like WASM)
-      if (cachedResponse) return cachedResponse;
-      return fetchAndCache(event.request);
-    } else {
-      // STRATEGY: Stale-While-Revalidate (for everything else)
-      const fetchPromise = fetchAndCache(event.request);
+      if (isLargeAsset) {
+        // STRATEGY: Cache-First (for huge files like WASM)
+        if (cachedResponse) return cachedResponse;
+        return fetchAndCache(event.request);
+      } else {
+        // STRATEGY: Stale-While-Revalidate (for everything else)
+        const fetchPromise = fetchAndCache(event.request);
 
-      // If we found it in cache, return it immediately, fetchPromise updates it in background
-      if (cachedResponse) {
-        return cachedResponse;
+        // If we found it in cache, return it immediately, fetchPromise updates it in background
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        // Otherwise wait for network
+        return fetchPromise;
       }
-      // Otherwise wait for network
-      return fetchPromise;
-    }
-  })());
+    })()
+  );
 });
 
-self.addEventListener('activate', (event) => {
+self.addEventListener('activate', event => {
   const cacheWhitelist = [CACHE_NAME];
-  event.waitUntil((async () => {
-    const cacheNames = await caches.keys();
-    await Promise.all(
-      cacheNames.map((cacheName) => {
-        if (!cacheWhitelist.includes(cacheName)) {
-          return caches.delete(cacheName);
-        }
-      })
-    );
-  })());
+  event.waitUntil(
+    (async () => {
+      const cacheNames = await caches.keys();
+      await Promise.all(
+        cacheNames.map(cacheName => {
+          if (!cacheWhitelist.includes(cacheName)) {
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    })()
+  );
 });
 
 async function fetchAndCache(request) {
@@ -87,7 +91,7 @@ async function fetchAndCache(request) {
 
   // We don't await the cache putting so we don't block the response
   const responseToCache = response.clone();
-  caches.open(CACHE_NAME).then((cache) => {
+  caches.open(CACHE_NAME).then(cache => {
     cache.put(request, responseToCache);
   });
 

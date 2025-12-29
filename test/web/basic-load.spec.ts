@@ -1,6 +1,6 @@
-import { test, expect } from '@playwright/test';
+import {test, expect} from '@playwright/test';
 
-test('should load the page without errors or 404s', async ({ page }) => {
+test('should load the page without errors or 404s', async ({page}) => {
   const failedRequests: string[] = [];
   const consoleErrors: string[] = [];
 
@@ -39,14 +39,14 @@ test('should load the page without errors or 404s', async ({ page }) => {
   await expect(page.locator('h1')).toHaveText('MarkPaste');
 });
 
-test('should paste HTML and update all 2 markdown outputs', async ({ page }) => {
+test('should paste HTML and update all 2 markdown outputs', async ({page}) => {
   await page.goto('http://127.0.0.1:8081/index.html');
 
   const inputArea = page.locator('#inputArea');
   const testHtml = '<h1>Test Title</h1><p>Hello <strong>world</strong></p>';
 
   // Simulate paste event
-  await page.evaluate((html) => {
+  await page.evaluate(html => {
     const el = document.querySelector('#inputArea');
     if (!el) return;
     const dataTransfer = new DataTransfer();

@@ -77,7 +77,7 @@ test.describe('MarkPaste functionality', () => {
     // Uncheck "Clean HTML"
     await page.locator('#cleanHtmlToggle').uncheck();
     // Wait for update
-    await page.waitForTimeout(100); 
+    await page.waitForTimeout(100);
 
     expect(await htmlCode.textContent()).toContain('<div>');
     expect(await htmlCode.textContent()).not.toContain('<script>');

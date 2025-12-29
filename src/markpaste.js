@@ -3,8 +3,8 @@
  * MarkPaste Library Entry Point
  */
 
-import { cleanHTML, removeStyleAttributes } from './cleaner.js';
-import { getConverter } from './converter.js';
+import {cleanHTML, removeStyleAttributes} from './cleaner.js';
+import {getConverter} from './converter.js';
 
 /**
  * Converts HTML to Markdown using the specified converter.
@@ -15,7 +15,7 @@ import { getConverter } from './converter.js';
  * @returns {Promise<string>} The resulting Markdown string.
  */
 export async function convert(html, options = {}) {
-  const { converter: converterName = 'turndown', clean = true } = options;
+  const {converter: converterName = 'turndown', clean = true} = options;
 
   const cleanedHtml = clean ? await cleanHTML(html) : await removeStyleAttributes(html);
   const converter = await getConverter(converterName);
@@ -23,4 +23,4 @@ export async function convert(html, options = {}) {
   return converter.convert(cleanedHtml);
 }
 
-export { cleanHTML, removeStyleAttributes, getConverter };
+export {cleanHTML, removeStyleAttributes, getConverter};

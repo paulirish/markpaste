@@ -7,7 +7,7 @@
 let parseHTMLGlobal, documentGlobal, NodeGlobal;
 
 if (typeof window !== 'undefined') {
-  parseHTMLGlobal = (html) => {
+  parseHTMLGlobal = html => {
     const parser = new DOMParser();
     return parser.parseFromString(html, 'text/html');
   };
@@ -15,8 +15,8 @@ if (typeof window !== 'undefined') {
   NodeGlobal = window.Node;
 } else {
   // We are in Node.js
-  const { parseHTML } = await import('linkedom');
-  parseHTMLGlobal = (html) => {
+  const {parseHTML} = await import('linkedom');
+  parseHTMLGlobal = html => {
     const fullHtml = `<!DOCTYPE html><html><body>${html}</body></html>`;
     return parseHTML(fullHtml).document;
   };
@@ -26,8 +26,35 @@ if (typeof window !== 'undefined') {
 }
 
 const ALLOWED_TAGS = [
-  'P', 'STRONG', 'B', 'EM', 'I', 'BLOCKQUOTE', 'CODE', 'PRE', 'A', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6',
-  'UL', 'OL', 'LI', 'DL', 'DT', 'DD', 'BR', 'HR', 'TABLE', 'THEAD', 'TBODY', 'TR', 'TH', 'TD',
+  'P',
+  'STRONG',
+  'B',
+  'EM',
+  'I',
+  'BLOCKQUOTE',
+  'CODE',
+  'PRE',
+  'A',
+  'H1',
+  'H2',
+  'H3',
+  'H4',
+  'H5',
+  'H6',
+  'UL',
+  'OL',
+  'LI',
+  'DL',
+  'DT',
+  'DD',
+  'BR',
+  'HR',
+  'TABLE',
+  'THEAD',
+  'TBODY',
+  'TR',
+  'TH',
+  'TD',
 ];
 
 const ALLOWED_ATTRIBUTES = {
@@ -72,12 +99,9 @@ function processNode(sourceNode, targetParent) {
     if (sourceNode.classList && sourceNode.classList.contains('mdn-copy-button')) {
       return;
     }
-    
+
     const href = sourceNode.getAttribute('href');
-    if (
-      tagName === 'A' &&
-      href && href.startsWith('https://developer.mozilla.org/en-US/play')
-    ) {
+    if (tagName === 'A' && href && href.startsWith('https://developer.mozilla.org/en-US/play')) {
       return;
     }
 
@@ -86,13 +110,12 @@ function processNode(sourceNode, targetParent) {
       // This tweak should only happen when this element is the FIRST element in the received DOM.
       if (tagName === 'UL' || tagName === 'OL') {
         const parent = sourceNode.parentNode;
-        const isFirstElementInBody = parent && 
-                                    parent.tagName === 'BODY' && 
-                                    Array.from(parent.children).find(c => !['META', 'STYLE'].includes(c.tagName.toUpperCase())) === sourceNode;
+        const isFirstElementInBody =
+          parent && parent.tagName === 'BODY' && Array.from(parent.children).find(c => !['META', 'STYLE'].includes(c.tagName.toUpperCase())) === sourceNode;
 
         if (isFirstElementInBody) {
-          const hasLiChild = Array.from(sourceNode.childNodes).some(child =>
-            child.nodeType === NodeGlobal.ELEMENT_NODE && child.tagName.toUpperCase() === 'LI'
+          const hasLiChild = Array.from(sourceNode.childNodes).some(
+            child => child.nodeType === NodeGlobal.ELEMENT_NODE && child.tagName.toUpperCase() === 'LI'
           );
           if (!hasLiChild) {
             // Unwrap: process children directly into targetParent
