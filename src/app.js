@@ -111,6 +111,9 @@ async function init() {
     lastProcessedContent = inputArea.innerHTML;
     processContent(lastProcessedContent);
   }
+
+  const registration = await navigator.serviceWorker?.register('/sw.js');
+  console.log('sw registered with scope: ', registration?.scope);
 }
 
 let idleDetectorInitialized = false;
