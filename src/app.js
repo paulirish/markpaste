@@ -62,6 +62,7 @@ const htmlCode = $('code#htmlCode');
 const copyBtn = $('button#copyBtn');
 const themeToggle = $('button#themeToggle');
 const cleanHtmlToggle = $('input#cleanHtmlToggle');
+const loadingOverlay = $('div#loadingOverlay');
 
 // View Toggle
 const viewMarkdownBtn = $('button#viewMarkdownBtn');
@@ -161,7 +162,18 @@ function setupEventListeners() {
 
   inputArea.on('input', () => {
     lastProcessedContent = inputArea.innerHTML;
-    processContent(lastProcessedContent);
+    if (lastProcessedContent.length > 10000) {
+      showLoading();
+      setTimeout(() => {
+        try {
+          processContent(lastProcessedContent);
+        } finally {
+          hideLoading();
+        }
+      }, 10);
+    } else {
+      processContent(lastProcessedContent);
+    }
   });
 
   copyBtn.on('click', copyToClipboard);
@@ -170,7 +182,18 @@ function setupEventListeners() {
 
   cleanHtmlToggle.on('change', () => {
     if (lastProcessedContent) {
-      processContent(lastProcessedContent);
+      if (lastProcessedContent.length > 5000) {
+        showLoading();
+        setTimeout(() => {
+          try {
+            processContent(lastProcessedContent);
+          } finally {
+            hideLoading();
+          }
+        }, 10);
+      } else {
+        processContent(lastProcessedContent);
+      }
     }
   });
 
@@ -225,6 +248,14 @@ function handleSelectAll(e) {
   }
 }
 
+function showLoading() {
+  loadingOverlay.classList.remove('hidden');
+}
+
+function hideLoading() {
+  loadingOverlay.classList.add('hidden');
+}
+
 async function handlePaste(e) {
   e.preventDefault();
 
@@ -232,14 +263,24 @@ async function handlePaste(e) {
   const pastedHtml = clipboardData.getData('text/html');
   const pastedText = clipboardData.getData('text/plain');
 
+  showLoading();
+
   await convertersPromise;
 
   const content = pastedHtml || pastedText;
   lastProcessedContent = content;
-  processContent(content);
+  
+  // Use setTimeout to allow UI to update before blocking the thread with conversion
+  setTimeout(() => {
+    try {
+      processContent(content);
+    } finally {
+      hideLoading();
+    }
 
-  // Reset scroll position for all pre elements
-  $$('pre').forEach(pre => pre.scrollTop = 0);
+    // Reset scroll position for all pre elements
+    $$('pre').forEach(pre => pre.scrollTop = 0);
+  }, 10);
 
   inputArea.innerHTML = '';
   inputArea.setAttribute('placeholder', 'Pasted! Ready for more...');
