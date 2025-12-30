@@ -36,9 +36,9 @@ async function getTurndownConverter() {
 async function getPandocConverter() {
   const pandocModule = await import('./pandoc.js');
   return {
-    convert: html => {
+    convert: async html => {
       const args = '--from html --to gfm --no-highlight --wrap=preserve';
-      const markdown = pandocModule.pandoc(args, html);
+      const markdown = await pandocModule.pandoc(args, html);
       return markdown;
     },
     dispose: () => {

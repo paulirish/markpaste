@@ -17,10 +17,10 @@ import {getConverter} from './converter.js';
 export async function convert(html, options = {}) {
   const {converter: converterName = 'turndown', clean = true} = options;
 
-  const cleanedHtml = clean ? await cleanHTML(html) : await removeStyleAttributes(html);
+  const cleanedHtml = clean ? cleanHTML(html) : removeStyleAttributes(html);
   const converter = await getConverter(converterName);
 
-  return converter.convert(cleanedHtml);
+  return await converter.convert(cleanedHtml);
 }
 
 export {cleanHTML, removeStyleAttributes, getConverter};

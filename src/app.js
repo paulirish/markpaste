@@ -108,7 +108,7 @@ async function init() {
   // Initial process if there's content (e.g. from reload, though usually empty)
   if (inputArea.innerHTML) {
     lastProcessedContent = inputArea.innerHTML;
-    processContent(lastProcessedContent);
+    await processContent(lastProcessedContent);
   }
 
   const registration = await navigator.serviceWorker?.register('/sw.js');
@@ -163,19 +163,19 @@ async function startIdleDetector() {
 function setupEventListeners() {
   inputArea.on('paste', handlePaste);
 
-  inputArea.on('input', () => {
+  inputArea.on('input', async () => {
     lastProcessedContent = inputArea.innerHTML;
     if (lastProcessedContent.length > 10000) {
       showLoading();
-      setTimeout(() => {
+      setTimeout(async () => {
         try {
-          processContent(lastProcessedContent);
+          await processContent(lastProcessedContent);
         } finally {
           hideLoading();
         }
       }, 10);
     } else {
-      processContent(lastProcessedContent);
+      await processContent(lastProcessedContent);
     }
   });
 
@@ -183,19 +183,19 @@ function setupEventListeners() {
 
   themeToggle.on('click', toggleTheme);
 
-  cleanHtmlToggle.on('change', () => {
+  cleanHtmlToggle.on('change', async () => {
     if (lastProcessedContent) {
       if (lastProcessedContent.length > 5000) {
         showLoading();
-        setTimeout(() => {
+        setTimeout(async () => {
           try {
-            processContent(lastProcessedContent);
+            await processContent(lastProcessedContent);
           } finally {
             hideLoading();
           }
         }, 10);
       } else {
-        processContent(lastProcessedContent);
+        await processContent(lastProcessedContent);
       }
     }
   });
@@ -274,9 +274,9 @@ async function handlePaste(e) {
   lastProcessedContent = content;
 
   // Use setTimeout to allow UI to update before blocking the thread with conversion
-  setTimeout(() => {
+  setTimeout(async () => {
     try {
-      processContent(content);
+      await processContent(content);
     } finally {
       hideLoading();
     }
@@ -292,7 +292,7 @@ async function handlePaste(e) {
   }, 2000);
 }
 
-function processContent(html) {
+async function processContent(html) {
   const shouldClean = cleanHtmlToggle.checked;
   const contentToConvert = shouldClean ? cleanHTML(html) : removeStyleAttributes(html);
 
@@ -302,7 +302,7 @@ function processContent(html) {
     window.Prism.highlightElement(htmlCode);
   }
 
-  const results = runConverters(contentToConvert);
+  const results = await runConverters(contentToConvert);
 
   // Update UI with results
   for (const [name, markdown] of Object.entries(results)) {
@@ -322,12 +322,12 @@ function processContent(html) {
   }
 }
 
-function runConverters(htmlContent) {
+async function runConverters(htmlContent) {
   const results = {};
   for (const [name, converter] of Object.entries(converters)) {
     if (converter) {
       try {
-        results[name] = converter.convert(htmlContent);
+        results[name] = await converter.convert(htmlContent);
       } catch (err) {
         console.error(`Converter ${name} failed:`, err);
         results[name] = `Error converting with ${name}: ${err.message}`;
@@ -388,7 +388,7 @@ function formatHTML(html) {
     if (node.match(/.+<\/\w[^>]*>$/)) {
       indent = 0;
     } else if (node.match(/^<\/\w/)) {
-      if (pad != 0) {
+      if (pad !== 0) {
         pad -= 1;
       }
     } else if (node.match(/^<\w[^>]*[^\/]>.*$/)) {
