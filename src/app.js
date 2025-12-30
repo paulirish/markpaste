@@ -33,6 +33,8 @@ NodeList.prototype.__proto__ = Array.prototype;
 NodeList.prototype.on = function (name, fn) {
   this.forEach(elem => elem.on(name, fn));
 };
+
+const {$, $$} = window;
 // Bling'ed out.
 
 // Theme Management
@@ -54,8 +56,6 @@ function toggleTheme() {
   document.documentElement.setAttribute('data-theme', newTheme);
   localStorage.setItem('theme', newTheme);
 }
-
-const {$, $$} = window;
 
 const inputArea = $('div#inputArea');
 const htmlCode = $('code#htmlCode');
