@@ -91,7 +91,7 @@ export async function pandoc(args_str, in_str) {
   // After main, we should probably free args_ptr if possible, but malloc here doesn't have a clear free exported?
   //   // Actually pandoc wasm usually doesn't expect you to free if it's a short-lived process,
   //   // but here it's long lived.
-  //   return new TextDecoder('utf-8', {fatal: true}).decode(out_file.data);
+  return new TextDecoder('utf-8', {fatal: true}).decode(out_file.data);
 }
 
 export function dispose() {
