@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# usage:
+#     printf '<b>bold</b> <i>italic</i> cool' | ./pbcopyhtml
+
+printf "set the clipboard to «data HTML$(cat $@ | hexdump -ve '1/1 "%.2x"')»" | osascript -
+
+
