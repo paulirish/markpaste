@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * markpasteclip
+ * markpaste
  *
  * 1. Reads HTML from the clipboard (via raw hex from osascript)
  * 2. Cleans and converts it to Markdown using MarkPaste
@@ -15,7 +15,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import os from 'node:os';
 
-import { convert, cleanHTML, isProbablyMarkdown } from './markpaste.js';
+import { convert, cleanHTML, isProbablyMarkdown } from '../src/index.js';
 import { marked } from 'marked';
 
 /**

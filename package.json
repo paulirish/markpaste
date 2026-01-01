@@ -2,7 +2,10 @@
   "name": "markpaste",
   "version": "0.0.1",
   "description": "HTML and Markdown, perfected for pasting into documents, emails, and more. So isomorphic. lol.",
-  "main": "src/markpaste.js",
+  "main": "src/index.js",
+  "bin": {
+    "markpaste": "bin/markpaste"
+  },
   "scripts": {
     "start": "npx statikk --port 7025",
     "typecheck": "tsc --noEmit",
@@ -34,6 +37,7 @@
     "@types/node": "^25.0.3",
     "linkedom": "^0.18.12",
     "marked": "^17.0.1",
+    "markpaste": "link:",
     "turndown": "^7.2.2",
     "turndown-plugin-gfm": "^1.0.2"
   }

@@ -6,11 +6,11 @@ import { fileURLToPath } from 'node:url';
 import os from 'node:os';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const CLIP_TOOL = path.resolve(__dirname, '../../src/markpasteclip');
+const CLIP_TOOL = path.resolve(__dirname, '../../bin/markpaste');
 
 // This test only works on macOS
 if (os.platform() === 'darwin') {
-  test('markpasteclip: round-trip conversion', async () => {
+  test('markpaste cli: round-trip conversion', async () => {
     const testContent = '<h1>Test</h1><p><b>Bold</b></p>';
     
     // 1. Set initial clipboard state
@@ -18,7 +18,7 @@ if (os.platform() === 'darwin') {
     const setScript = `set the clipboard to {«class HTML»:«data HTML${htmlHex}», text:"${testContent}"}`;
     spawnSync('osascript', ['-e', setScript]);
 
-    // 2. Run markpasteclip
+    // 2. Run markpaste
     execSync(`"${CLIP_TOOL}"`, { encoding: 'utf8' });
 
     // 3. Verify Plain Text flavor (should be Markdown)
@@ -41,7 +41,7 @@ if (os.platform() === 'darwin') {
     }
   });
 
-  test('markpasteclip: markdown to html conversion', async () => {
+  test('markpaste cli: markdown to html conversion', async () => {
     const markdownInput = '# MD Test\n\n- item 1';
     
     // 1. Set clipboard to plain text only (no HTML flavor)
@@ -49,7 +49,7 @@ if (os.platform() === 'darwin') {
     // Verify no HTML flavor exists (or at least we want to simulate that state)
     // Actually pbcopy only sets text flavor, so this is perfect.
 
-    // 2. Run markpasteclip
+    // 2. Run markpaste
     execSync(`"${CLIP_TOOL}"`, { encoding: 'utf8' });
 
     // 3. Verify HTML flavor (should be rendered HTML)
@@ -66,7 +66,7 @@ if (os.platform() === 'darwin') {
     assert.strictEqual(plainText, markdownInput);
   });
 } else {
-  test('markpasteclip: skipped on non-macOS', () => {
+  test('markpaste cli: skipped on non-macOS', () => {
     // Pass
   });
 }

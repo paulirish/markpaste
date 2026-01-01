@@ -22,7 +22,7 @@ MarkPaste is an isomorphic tool that converts rich text to Markdown. It works se
 MarkPaste can be used programmatically in Node.js environments. It uses `linkedom` to provide a lightweight DOM implementation for the conversion logic.
 
 ```javascript
-import { convert } from './src/markpaste.js';
+import { convert } from './src/index.js';
 
 const html = '<h1>Hello World</h1><p>This is <b>bold</b> text.</p>';
 

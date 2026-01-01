@@ -1,6 +1,6 @@
 /**
- * markpaste.js
- * MarkPaste Library Entry Point
+ * index.js
+ * MarkPaste Library Entry Point (Node.js)
  */
 
 import { cleanHTML, removeStyleAttributes } from './cleaner.js';

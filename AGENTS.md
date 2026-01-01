@@ -13,9 +13,10 @@ MarkPaste is a web-based utility for converting rich text to Markdown. The core 
   - `src/cleaner.js`: The logic for cleaning the HTML.
   - `src/converter.js`: The logic for converting HTML to Markdown.
 
-- `src/markpaste.js`: The library entry point. (for node or bundling)
+- `src/index.js`: The library entry point. (for node or bundling)
 
 - Also:
+  - `bin/markpaste`: The CLI tool for macOS clipboard integration.
   - `test/web/`: Playwright tests for core application functionality.
   - `test/node/`: Node.js unit tests for library logic.
   - `third_party/`: External assets like `pandoc.wasm`.
