@@ -109,7 +109,7 @@ async function init() {
   // Initial process if there's content (e.g. from reload, though usually empty)
   if (inputArea.innerHTML) {
     lastProcessedContent = inputArea.innerHTML;
-    processContent(lastProcessedContent);
+    await processContent(lastProcessedContent);
   }
 }
 
@@ -160,19 +160,19 @@ async function startIdleDetector() {
 function setupEventListeners() {
   inputArea.on('paste', handlePaste);
 
-  inputArea.on('input', () => {
+  inputArea.on('input', async () => {
     lastProcessedContent = inputArea.innerHTML;
     if (lastProcessedContent.length > 10000) {
       showLoading();
-      setTimeout(() => {
+      setTimeout(async () => {
         try {
-          processContent(lastProcessedContent);
+          await processContent(lastProcessedContent);
         } finally {
           hideLoading();
         }
       }, 10);
     } else {
-      processContent(lastProcessedContent);
+      await processContent(lastProcessedContent);
     }
   });
 
@@ -180,19 +180,19 @@ function setupEventListeners() {
 
   themeToggle.on('click', toggleTheme);
 
-  cleanHtmlToggle.on('change', () => {
+  cleanHtmlToggle.on('change', async () => {
     if (lastProcessedContent) {
       if (lastProcessedContent.length > 5000) {
         showLoading();
-        setTimeout(() => {
+        setTimeout(async () => {
           try {
-            processContent(lastProcessedContent);
+            await processContent(lastProcessedContent);
           } finally {
             hideLoading();
           }
         }, 10);
       } else {
-        processContent(lastProcessedContent);
+        await processContent(lastProcessedContent);
       }
     }
   });
@@ -267,13 +267,14 @@ async function handlePaste(e) {
 
   await convertersPromise;
 
-  const content = pastedHtml || pastedText;
+  const isMarkdown = isProbablyMarkdown(pastedText, !!pastedHtml);
+  const content = isMarkdown ? pastedText : (pastedHtml || pastedText);
   lastProcessedContent = content;
 
   // Use setTimeout to allow UI to update before blocking the thread with conversion
-  setTimeout(() => {
+  setTimeout(async () => {
     try {
-      processContent(content);
+      await processContent(content, isMarkdown);
     } finally {
       hideLoading();
     }
@@ -289,20 +290,46 @@ async function handlePaste(e) {
   }, 2000);
 }
 
-function processContent(html) {
-  const shouldClean = cleanHtmlToggle.checked;
-  const contentToConvert = shouldClean ? cleanHTML(html) : removeStyleAttributes(html);
+function isProbablyMarkdown(text, hasHtml) {
+  if (hasHtml) return false;
+  const trimmed = text.trim();
+  if (trimmed.startsWith('<')) return false;
+  return true;
+}
+
+async function processContent(content, isMarkdown = null) {
+  let htmlToShow;
+  let markdownResults;
+
+  if (isMarkdown === null) {
+    isMarkdown = isProbablyMarkdown(content, false);
+  }
+
+  if (isMarkdown) {
+    // If it's markdown, the "results" are just the content itself.
+    markdownResults = {
+      turndown: content,
+      pandoc: content,
+    };
+    // For the HTML preview, we render the markdown.
+    const tempDiv = document.createElement('div');
+    await renderMarkdown(content, tempDiv);
+    htmlToShow = tempDiv.innerHTML;
+  } else {
+    const shouldClean = cleanHtmlToggle.checked;
+    const contentToConvert = shouldClean ? cleanHTML(content) : removeStyleAttributes(content);
+    htmlToShow = contentToConvert;
+    markdownResults = runConverters(contentToConvert);
+  }
 
   // Update HTML Preview
-  htmlCode.textContent = formatHTML(contentToConvert);
+  htmlCode.textContent = formatHTML(htmlToShow);
   if (window.Prism) {
     window.Prism.highlightElement(htmlCode);
   }
 
-  const results = runConverters(contentToConvert);
-
   // Update UI with results
-  for (const [name, markdown] of Object.entries(results)) {
+  for (const [name, markdown] of Object.entries(markdownResults)) {
     if (outputs[name]) {
       outputs[name].code.textContent = markdown;
       if (window.Prism) {
@@ -312,7 +339,9 @@ function processContent(html) {
   }
 
   // Fire and forget the diff check
-  checkDiffs(results);
+  if (!isMarkdown) {
+    checkDiffs(markdownResults);
+  }
 
   if (currentView === 'rendered') {
     updateRenderedPreviews();

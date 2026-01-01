@@ -114,4 +114,31 @@ test.describe('MarkPaste functionality', () => {
     await expect(htmlCode).toContainText('<td');
     await expect(htmlCode).toContainText('<th');
   });
+
+  test('should handle pasting markdown and pipe it through', async ({page}) => {
+    const markdown = '# This is Markdown\n\n- List item 1\n- List item 2';
+    
+    // Simulate paste event
+    await page.evaluate(text => {
+      const inputArea = document.getElementById('inputArea');
+      const dataTransfer = new DataTransfer();
+      dataTransfer.setData('text/plain', text);
+      const event = new ClipboardEvent('paste', {
+        clipboardData: dataTransfer,
+        bubbles: true,
+        cancelable: true
+      });
+      inputArea.dispatchEvent(event);
+    }, markdown);
+
+    const outputCode = page.locator('#outputCodeTurndown');
+    await expect(outputCode).toHaveText(markdown);
+
+    const htmlCode = page.locator('#htmlCode');
+    // It should be rendered HTML in the preview
+    const htmlText = await htmlCode.innerText();
+    expect(htmlText).toContain('<h1>This is Markdown</h1>');
+    expect(htmlText).toContain('<ul>');
+    expect(htmlText).toContain('<li>List item 1</li>');
+  });
 });
