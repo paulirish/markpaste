@@ -1,25 +1,35 @@
 #!/bin/bash
 
 # pbcopyhtml: Copy HTML and Plain Text to the macOS clipboard simultaneously.
-# Handles multiline strings and special characters robustly via hex encoding for HTML.
+# Usage:
+#   1. printf '<b>html</b>' | ./pbcopyhtml
+#      (Sets both flavors to the same content)
+#   2. ./pbcopyhtml <html_file> <text_file>
+#      (Sets flavors to different content)
 
-# Read all input from stdin
-TMP_IN=$(mktemp /tmp/pbcopyhtml.XXXXXX)
-cat > "$TMP_IN"
+if [ "$#" -eq 2 ]; then
+    HTML_PATH="$1"
+    TEXT_PATH="$2"
+else
+    # Fallback to stdin if no files provided
+    TMP_IN=$(mktemp /tmp/pbcopyhtml.XXXXXX)
+    cat > "$TMP_IN"
+    HTML_PATH="$TMP_IN"
+    TEXT_PATH="$TMP_IN"
+    CLEANUP=true
+fi
 
 # 1. Generate hex for HTML
-HTML_HEX=$(hexdump -ve '1/1 "%.2x"' < "$TMP_IN")
+HTML_HEX=$(hexdump -ve '1/1 "%.2x"' < "$HTML_PATH")
 
-# 2. Get text content (escaping backslashes and double quotes for AppleScript)
-# We use a file read in AppleScript to be robust for long strings
-TEXT_PATH="$TMP_IN"
-
-# 3. Use osascript with a record
-# We use 'read' from the file for the text part to avoid shell escaping/length issues
+# 2. Use osascript to set both
+# We read the text part as UTF-8
 osascript <<EOF
 set theText to (read (POSIX file "${TEXT_PATH}") as «class utf8»)
 set the clipboard to {«class HTML»:«data HTML${HTML_HEX}», text:theText}
 EOF
 
-# Clean up
-rm "$TMP_IN"
+# Clean up if we used a temp file
+if [ "$CLEANUP" = true ]; then
+    rm "$TMP_IN"
+fi

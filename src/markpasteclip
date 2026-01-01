@@ -1,0 +1,63 @@
+#!/usr/bin/env node
+
+/**
+ * cli-convert.js
+ *
+ * 1. Reads HTML from the clipboard (pbpaste -Prefer html)
+ * 2. Cleans and converts it to Markdown using MarkPaste
+ * 3. Saves Markdown as Plain Text and Cleaned HTML as HTML back to clipboard using pbcopyhtml
+ */
+
+import { execSync } from 'node:child_process';
+import { writeFileSync, unlinkSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { convert, cleanHTML } from './markpaste.js';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+async function main() {
+  try {
+    // 1. Get HTML from clipboard
+    // -Prefer html tells pbpaste to grab the HTML flavor if available
+    const rawHtml = execSync('pbpaste -Prefer html', { encoding: 'utf8' });
+
+    if (!rawHtml || rawHtml.trim() === '') {
+      console.error('No HTML content found in clipboard.');
+      process.exit(1);
+    }
+
+    console.log('Reading from clipboard...');
+
+    // 2. Process: Clean HTML and Convert to Markdown
+    const cleanedHtml = await cleanHTML(rawHtml);
+    const markdown = await convert(rawHtml, { clean: true });
+
+    // 3. Prepare for pbcopyhtml
+    // We need temporary files to pass to pbcopyhtml because it's the safest way
+    // to handle multiline/special characters through the shell/AppleScript bridge
+    const htmlTmp = path.join(__dirname, '.tmp_cleaned.html');
+    const mdTmp = path.join(__dirname, '.tmp_markdown.txt');
+
+    writeFileSync(htmlTmp, cleanedHtml);
+    writeFileSync(mdTmp, markdown);
+
+    // 4. Run pbcopyhtml
+    const pbcopyhtmlPath = path.join(__dirname, 'pbcopyhtml');
+    execSync(`"${pbcopyhtmlPath}" "${htmlTmp}" "${mdTmp}"`);
+
+    // 5. Cleanup
+    unlinkSync(htmlTmp);
+    unlinkSync(mdTmp);
+
+    console.log('✅ Clipboard updated with:');
+    console.log('   - Plain Text: Converted Markdown');
+    console.log('   - HTML: Cleaned Rich Text');
+
+  } catch (err) {
+    console.error('Error during conversion:', err);
+    process.exit(1);
+  }
+}
+
+main();
