@@ -40,6 +40,31 @@ if (os.platform() === 'darwin') {
       assert.fail('Could not extract HTML hex from clipboard');
     }
   });
+
+  test('markpasteclip: markdown to html conversion', async () => {
+    const markdownInput = '# MD Test\n\n- item 1';
+    
+    // 1. Set clipboard to plain text only (no HTML flavor)
+    execSync('pbcopy', { input: markdownInput });
+    // Verify no HTML flavor exists (or at least we want to simulate that state)
+    // Actually pbcopy only sets text flavor, so this is perfect.
+
+    // 2. Run markpasteclip
+    execSync(`"${CLIP_TOOL}"`, { encoding: 'utf8' });
+
+    // 3. Verify HTML flavor (should be rendered HTML)
+    const htmlData = execSync('osascript -e "get (the clipboard as «class HTML»)"', { encoding: 'utf8' }).trim();
+    assert.strictEqual(htmlData.includes('«data HTML'), true);
+    
+    const match = htmlData.match(/«data HTML([0-9A-F]*)»/i);
+    const resultHtml = Buffer.from(match[1], 'hex').toString('utf8');
+    assert.strictEqual(resultHtml.toLowerCase().includes('<h1>md test</h1>'), true);
+    assert.strictEqual(resultHtml.toLowerCase().includes('<li>item 1</li>'), true);
+
+    // 4. Verify Plain Text flavor (should be original markdown)
+    const plainText = execSync('osascript -e "get (the clipboard as string)"', { encoding: 'utf8' }).trim();
+    assert.strictEqual(plainText, markdownInput);
+  });
 } else {
   test('markpasteclip: skipped on non-macOS', () => {
     // Pass

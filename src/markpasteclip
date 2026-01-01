@@ -12,11 +12,21 @@
 import { execSync, spawnSync } from 'node:child_process';
 import { writeFileSync, unlinkSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import os from 'node:os';
 
-import { convert, cleanHTML } from './markpaste.js';
+import { convert, cleanHTML, isProbablyMarkdown } from './markpaste.js';
+import { marked } from 'marked';
 
-
+/**
+ * Formats a string for preview in the logs (truncated, escaped, and dimmed).
+ */
+function textToPreview(text, length = 100) {
+  const dimmedStart = '\x1b[2m';
+  const dimmedEnd = '\x1b[22m';
+  const preview = text.substring(0, length).replace(/\n/g, '\\n');
+  return `${dimmedStart}${preview}${dimmedEnd}...`;
+}
 
 /**
  * Reads the HTML flavor from the macOS clipboard.
@@ -64,19 +74,10 @@ function setClipboard(html, markdown) {
   }
 }
 
-/**
- * Formats a string for preview in the logs (truncated, escaped, and dimmed).
- */
-function textToPreview(text, length = 100) {
-  const dimmedStart = '\x1b[2m';
-  const dimmedEnd = '\x1b[22m';
-  const preview = text.substring(0, length).replace(/\n/g, '\\n');
-  return `${dimmedStart}${preview}${dimmedEnd}...`;
-}
-
 async function main() {
   try {
     const rawHtml = readHtmlFromClipboard();
+    const hasHtmlFlavor = !!rawHtml;
     const input = rawHtml || readTextFromClipboard();
 
     if (!input || input.trim() === '') {
@@ -87,10 +88,21 @@ async function main() {
     console.log(`Reading from clipboard... (${input.length} chars)`);
     console.log(`   Preview: ${textToPreview(input)}`);
 
-    const cleanedHtml = await cleanHTML(input);
-    const markdown = await convert(input, { clean: true });
+    const isMarkdown = isProbablyMarkdown(input, hasHtmlFlavor);
 
+    let cleanedHtml;
+    let markdown;
 
+    if (isMarkdown) {
+      console.log('✨ Markdown detected. Rendering to HTML...');
+      markdown = input;
+      cleanedHtml = await marked.parse(input);
+    } else {
+      cleanedHtml = await cleanHTML(input);
+      markdown = await convert(input, { clean: true, isMarkdown: false });
+    }
+
+    console.log('Updating clipboard...');
     setClipboard(cleanedHtml, markdown);
 
     // // Verification Step
