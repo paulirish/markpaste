@@ -77,7 +77,7 @@ test.describe('MarkPaste functionality', () => {
     // Uncheck "Clean HTML"
     await page.locator('#cleanHtmlToggle').uncheck();
     // Wait for update
-    await page.waitForTimeout(100); 
+    await page.waitForTimeout(100);
 
     expect(await htmlCode.textContent()).toContain('<div>');
     expect(await htmlCode.textContent()).not.toContain('<script>');
@@ -117,7 +117,7 @@ test.describe('MarkPaste functionality', () => {
 
   test('should handle pasting markdown and pipe it through', async ({page}) => {
     const markdown = '# This is Markdown\n\n- List item 1\n- List item 2';
-    
+
     // Simulate paste event
     await page.evaluate(text => {
       const inputArea = document.getElementById('inputArea');
@@ -126,7 +126,7 @@ test.describe('MarkPaste functionality', () => {
       const event = new ClipboardEvent('paste', {
         clipboardData: dataTransfer,
         bubbles: true,
-        cancelable: true
+        cancelable: true,
       });
       inputArea.dispatchEvent(event);
     }, markdown);

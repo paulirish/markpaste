@@ -43,7 +43,7 @@ async function getPandocConverter() {
     },
     dispose: () => {
       pandocModule.dispose();
-    }
+    },
   };
 }
 

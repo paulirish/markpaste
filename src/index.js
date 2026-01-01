@@ -3,8 +3,8 @@
  * MarkPaste Library Entry Point (Node.js)
  */
 
-import { cleanHTML, removeStyleAttributes } from './cleaner.js';
-import { getConverter } from './converter.js';
+import {cleanHTML, removeStyleAttributes} from './cleaner.js';
+import {getConverter} from './converter.js';
 
 /**
  * Converts HTML to Markdown using the specified converter.
@@ -16,7 +16,7 @@ import { getConverter } from './converter.js';
  * @returns {Promise<string>} The resulting Markdown string.
  */
 export async function convert(input, options = {}) {
-  const { converter: converterName = 'turndown', clean = true, isMarkdown: forcedIsMarkdown } = options;
+  const {converter: converterName = 'turndown', clean = true, isMarkdown: forcedIsMarkdown} = options;
 
   const isMarkdown = forcedIsMarkdown !== undefined ? forcedIsMarkdown : isProbablyMarkdown(input);
 
@@ -32,7 +32,7 @@ export async function convert(input, options = {}) {
 
 /**
  * Heuristic to detect if a string is likely Markdown instead of HTML.
- * @param {string} text 
+ * @param {string} text
  * @param {boolean} [hasHtmlFlavor=false] If we know for a fact there was an HTML flavor (e.g. from clipboard)
  * @returns {boolean}
  */
@@ -43,4 +43,4 @@ export function isProbablyMarkdown(text, hasHtmlFlavor = false) {
   return true;
 }
 
-export { cleanHTML, removeStyleAttributes, getConverter };
+export {cleanHTML, removeStyleAttributes, getConverter};

@@ -1,6 +1,6 @@
-import { test } from 'node:test';
+import {test} from 'node:test';
 import assert from 'node:assert';
-import { getConverter } from '../../src/converter.js';
+import {getConverter} from '../../src/converter.js';
 
 test('converter: turndown should convert HTML to Markdown', async () => {
   const converter = await getConverter('turndown');
@@ -10,9 +10,12 @@ test('converter: turndown should convert HTML to Markdown', async () => {
 });
 
 test('converter: unknown converter should throw error', async () => {
-  await assert.rejects(async () => {
-    await getConverter('non-existent');
-  }, {
-    message: 'Unknown converter: non-existent. Available converters: turndown, pandoc'
-  });
+  await assert.rejects(
+    async () => {
+      await getConverter('non-existent');
+    },
+    {
+      message: 'Unknown converter: non-existent. Available converters: turndown, pandoc',
+    }
+  );
 });
