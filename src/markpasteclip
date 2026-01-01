@@ -64,6 +64,16 @@ function setClipboard(html, markdown) {
   }
 }
 
+/**
+ * Formats a string for preview in the logs (truncated, escaped, and dimmed).
+ */
+function textToPreview(text, length = 100) {
+  const dimmedStart = '\x1b[2m';
+  const dimmedEnd = '\x1b[22m';
+  const preview = text.substring(0, length).replace(/\n/g, '\\n');
+  return `${dimmedStart}${preview}${dimmedEnd}...`;
+}
+
 async function main() {
   try {
     const rawHtml = readHtmlFromClipboard();
@@ -75,11 +85,12 @@ async function main() {
     }
 
     console.log(`Reading from clipboard... (${input.length} chars)`);
+    console.log(`   Preview: ${textToPreview(input)}`);
 
     const cleanedHtml = await cleanHTML(input);
     const markdown = await convert(input, { clean: true });
 
-    console.log('Updating clipboard...');
+
     setClipboard(cleanedHtml, markdown);
 
     // // Verification Step
@@ -95,9 +106,9 @@ async function main() {
     //   }
     // }
 
-    console.log('✅ Clipboard updated with:');
-    console.log('   - Plain Text: Converted Markdown');
-    console.log('   - HTML: Cleaned Rich Text');
+    console.log('\n✅ Clipboard updated with:');
+    console.log(`   - Plain Text (Markdown): ${textToPreview(markdown)}`);
+    console.log(`   - HTML (Cleaned): ${textToPreview(cleanedHtml)}`);
 
   } catch (err) {
     console.error('Error during conversion:', err);
