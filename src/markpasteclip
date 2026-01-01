@@ -43,13 +43,16 @@ async function main() {
     }
 
     console.log(`Reading from clipboard... (${rawHtml.length} chars)`);
+    console.log('Raw HTML preview:', rawHtml.substring(0, 100));
 
     // 2. Process: Clean HTML and Convert to Markdown
     const cleanedHtml = await cleanHTML(rawHtml);
     console.log(`HTML cleaned. (${cleanedHtml.length} chars)`);
+    console.log('Cleaned HTML preview:', cleanedHtml.substring(0, 100));
 
     const markdown = await convert(rawHtml, { clean: true });
     console.log(`Markdown converted. (${markdown.length} chars)`);
+    console.log('Markdown preview:', markdown.substring(0, 100));
 
     // 3. Write clipboard flavors
     
