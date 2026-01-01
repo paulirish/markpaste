@@ -1,53 +1,86 @@
 #!/usr/bin/env node
 
 /**
- * cli-convert.js
+ * markpasteclip
  *
- * 1. Reads HTML from the clipboard (pbpaste -Prefer html)
+ * 1. Reads HTML from the clipboard (via raw hex from osascript)
  * 2. Cleans and converts it to Markdown using MarkPaste
- * 3. Saves Markdown as Plain Text and Cleaned HTML as HTML back to clipboard using pbcopyhtml
+ * 3. Saves Markdown as Plain Text and Cleaned HTML as HTML back to clipboard
  */
 
-import { execSync } from 'node:child_process';
+import { execSync, spawnSync } from 'node:child_process';
 import { writeFileSync, unlinkSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import os from 'node:os';
 import { convert, cleanHTML } from './markpaste.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 async function main() {
   try {
-    // 1. Get HTML from clipboard
-    // -Prefer html tells pbpaste to grab the HTML flavor if available
-    const rawHtml = execSync('pbpaste -Prefer html', { encoding: 'utf8' });
+    // 1. Get HTML from clipboard via raw hex
+    // osascript returns «data HTML3C...»
+    let rawHtml;
+    try {
+      const hexData = execSync('osascript -e "the clipboard as «class HTML»"', { encoding: 'utf8' }).trim();
+      const match = hexData.match(/«data HTML([0-9A-F]*)»/i);
+      if (match && match[1]) {
+        rawHtml = Buffer.from(match[1], 'hex').toString('utf8');
+      }
+    } catch (e) {
+      // It's fine if HTML flavor is missing
+    }
+
+    // Fallback to plain text if HTML flavor is missing
+    if (!rawHtml) {
+      rawHtml = execSync('pbpaste', { encoding: 'utf8' });
+    }
 
     if (!rawHtml || rawHtml.trim() === '') {
-      console.error('No HTML content found in clipboard.');
+      console.error('No content found in clipboard.');
       process.exit(1);
     }
 
-    console.log('Reading from clipboard...');
+    console.log(`Reading from clipboard... (${rawHtml.length} chars)`);
 
     // 2. Process: Clean HTML and Convert to Markdown
     const cleanedHtml = await cleanHTML(rawHtml);
+    console.log(`HTML cleaned. (${cleanedHtml.length} chars)`);
+
     const markdown = await convert(rawHtml, { clean: true });
+    console.log(`Markdown converted. (${markdown.length} chars)`);
 
-    // 3. Prepare for pbcopyhtml
-    // We need temporary files to pass to pbcopyhtml because it's the safest way
-    // to handle multiline/special characters through the shell/AppleScript bridge
-    const htmlTmp = path.join(__dirname, '.tmp_cleaned.html');
-    const mdTmp = path.join(__dirname, '.tmp_markdown.txt');
-
-    writeFileSync(htmlTmp, cleanedHtml);
+    // 3. Write clipboard flavors
+    
+    // We use a temp file for the text portion because reading from a file 
+    // in AppleScript is the most robust way to handle large/multiline strings 
+    // without hitting shell argument length limits or escaping issues.
+    const mdTmp = path.join(os.tmpdir(), `mp_md_${Date.now()}.txt`);
     writeFileSync(mdTmp, markdown);
 
-    // 4. Run pbcopyhtml
-    const pbcopyhtmlPath = path.join(__dirname, 'pbcopyhtml');
-    execSync(`"${pbcopyhtmlPath}" "${htmlTmp}" "${mdTmp}"`);
+    // Convert cleaned HTML to hex for AppleScript «data HTML...»
+    const htmlHex = Buffer.from(cleanedHtml, 'utf8').toString('hex');
 
-    // 5. Cleanup
-    unlinkSync(htmlTmp);
+    console.log('Updating clipboard...');
+    
+    // AppleScript to set both flavors
+    const appleScript = `
+      set theText to (read (POSIX file "${mdTmp}") as «class utf8»)
+      set the clipboard to {«class HTML»:«data HTML${htmlHex}», text:theText}
+    `;
+
+    const result = spawnSync('osascript', [], { input: appleScript, encoding: 'utf8' });
+    
+    if (result.error) {
+       throw result.error;
+    }
+    if (result.status !== 0) {
+       console.error('osascript error:', result.stderr);
+       process.exit(1);
+    }
+
+    // 4. Cleanup
     unlinkSync(mdTmp);
 
     console.log('✅ Clipboard updated with:');
