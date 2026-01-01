@@ -1,8 +1,25 @@
-#!/bin/sh
+#!/bin/bash
 
-# usage:
-#     printf '<b>bold</b> <i>italic</i> cool' | ./pbcopyhtml
+# pbcopyhtml: Copy HTML and Plain Text to the macOS clipboard simultaneously.
+# Handles multiline strings and special characters robustly via hex encoding for HTML.
 
-printf "set the clipboard to «data HTML$(cat $@ | hexdump -ve '1/1 "%.2x"')»" | osascript -
+# Read all input from stdin
+TMP_IN=$(mktemp /tmp/pbcopyhtml.XXXXXX)
+cat > "$TMP_IN"
 
+# 1. Generate hex for HTML
+HTML_HEX=$(hexdump -ve '1/1 "%.2x"' < "$TMP_IN")
 
+# 2. Get text content (escaping backslashes and double quotes for AppleScript)
+# We use a file read in AppleScript to be robust for long strings
+TEXT_PATH="$TMP_IN"
+
+# 3. Use osascript with a record
+# We use 'read' from the file for the text part to avoid shell escaping/length issues
+osascript <<EOF
+set theText to (read (POSIX file "${TEXT_PATH}") as «class utf8»)
+set the clipboard to {«class HTML»:«data HTML${HTML_HEX}», text:theText}
+EOF
+
+# Clean up
+rm "$TMP_IN"
