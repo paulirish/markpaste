@@ -26,7 +26,7 @@ async function main() {
       // We use a try block in AppleScript to avoid non-zero exit codes/stderr noise if HTML is missing
       const script = 'try\n  the clipboard as «class HTML»\non error\n  return ""\nend try';
       const hexData = execSync(`osascript -e '${script}'`, { encoding: 'utf8' }).trim();
-      
+
       const match = hexData.match(/«data HTML([0-9A-F]*)»/i);
       if (match && match[1]) {
         rawHtml = Buffer.from(match[1], 'hex').toString('utf8');
@@ -46,21 +46,19 @@ async function main() {
     }
 
     console.log(`Reading from clipboard... (${rawHtml.length} chars)`);
-    console.log('Raw HTML preview:', rawHtml.substring(0, 100));
+    console.log('Raw HTML preview:', rawHtml.substring(0, 100).replace(/\n/g, '\\n'));
 
     // 2. Process: Clean HTML and Convert to Markdown
     const cleanedHtml = await cleanHTML(rawHtml);
-    console.log(`HTML cleaned. (${cleanedHtml.length} chars)`);
-    console.log('Cleaned HTML preview:', cleanedHtml.substring(0, 100));
+    console.log('Cleaned HTML preview:', cleanedHtml.substring(0, 100).replace(/\n/g, '\\n'));
 
     const markdown = await convert(rawHtml, { clean: true });
-    console.log(`Markdown converted. (${markdown.length} chars)`);
-    console.log('Markdown preview:', markdown.substring(0, 100));
+    console.log('Markdown preview:', markdown.substring(0, 100).replace(/\n/g, '\\n'));
 
     // 3. Write clipboard flavors
-    
-    // We use a temp file for the text portion because reading from a file 
-    // in AppleScript is the most robust way to handle large/multiline strings 
+
+    // We use a temp file for the text portion because reading from a file
+    // in AppleScript is the most robust way to handle large/multiline strings
     // without hitting shell argument length limits or escaping issues.
     const mdTmp = path.join(os.tmpdir(), `mp_md_${Date.now()}.txt`);
     writeFileSync(mdTmp, markdown);
@@ -69,7 +67,7 @@ async function main() {
     const htmlHex = Buffer.from(cleanedHtml, 'utf8').toString('hex');
 
     console.log('Updating clipboard...');
-    
+
     // AppleScript to set both flavors
     const appleScript = `
       set theText to (read (POSIX file "${mdTmp}") as «class utf8»)
@@ -77,7 +75,7 @@ async function main() {
     `;
 
     const result = spawnSync('osascript', [], { input: appleScript, encoding: 'utf8' });
-    
+
     if (result.error) {
        throw result.error;
     }
