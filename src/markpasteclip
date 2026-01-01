@@ -23,13 +23,16 @@ async function main() {
     // osascript returns «data HTML3C...»
     let rawHtml;
     try {
-      const hexData = execSync('osascript -e "the clipboard as «class HTML»"', { encoding: 'utf8' }).trim();
+      // We use a try block in AppleScript to avoid non-zero exit codes/stderr noise if HTML is missing
+      const script = 'try\n  the clipboard as «class HTML»\non error\n  return ""\nend try';
+      const hexData = execSync(`osascript -e '${script}'`, { encoding: 'utf8' }).trim();
+      
       const match = hexData.match(/«data HTML([0-9A-F]*)»/i);
       if (match && match[1]) {
         rawHtml = Buffer.from(match[1], 'hex').toString('utf8');
       }
     } catch (e) {
-      // It's fine if HTML flavor is missing
+      // Fallback handled below
     }
 
     // Fallback to plain text if HTML flavor is missing

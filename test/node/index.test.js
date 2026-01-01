@@ -21,3 +21,16 @@ test('library: convert should support disabling cleaning', async () => {
   const markdown = await convert(html, { clean: false });
   assert.strictEqual(markdown.includes('Hello'), true);
 });
+
+test('library: convert should short-circuit if markdown is detected', async () => {
+  const markdownInput = '# Already Markdown\n\n- item';
+  const result = await convert(markdownInput);
+  assert.strictEqual(result, markdownInput);
+});
+
+test('library: convert should NOT short-circuit if isMarkdown: false is passed', async () => {
+  const input = '# Not Markdown'; // Looks like MD, but we force it not to be
+  const result = await convert(input, { isMarkdown: false });
+  // Turndown escapes # if it's not a real header
+  assert.strictEqual(result.trim(), '\\# Not Markdown');
+});
