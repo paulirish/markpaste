@@ -4,9 +4,6 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
-overrides:
-  markpaste: 'link:'
-
 importers:
 
   .:
@@ -23,9 +20,6 @@ importers:
       marked:
         specifier: ^17.0.1
         version: 17.0.1
-      markpaste:
-        specifier: 'link:'
-        version: 'link:'
       turndown:
         specifier: ^7.2.2
         version: 7.2.2
