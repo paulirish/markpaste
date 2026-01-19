@@ -160,6 +160,16 @@ function processNode(sourceNode, targetParent) {
 export function removeStyleAttributes(html) {
   const doc = parseHTMLGlobal(html);
   const body = doc.body;
+
+  // Strip dangerous tags even when "Clean HTML" is off
+  const DANGEROUS_TAGS = ['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'LINK', 'META'];
+  DANGEROUS_TAGS.forEach(tag => {
+    const elements = body.querySelectorAll(tag);
+    for (let i = 0; i < elements.length; i++) {
+      elements[i].remove();
+    }
+  });
+
   const allElements = body.querySelectorAll('*');
   for (let i = 0; i < allElements.length; i++) {
     allElements[i].removeAttribute('style');

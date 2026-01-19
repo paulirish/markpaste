@@ -2,7 +2,7 @@ import {test, expect} from '@playwright/test';
 
 test.describe('MarkPaste functionality', () => {
   test.beforeEach(async ({page}) => {
-    await page.goto('http://127.0.0.1:8081/index.html');
+    await page.goto('http://127.0.0.1:7025/index.html');
   });
 
   test('should convert basic rich text to markdown', async ({page}) => {
@@ -56,8 +56,7 @@ test.describe('MarkPaste functionality', () => {
     await expect(pandocOutput).toContainText('Hello World');
   });
 
-  // SKIP this for now. needs a human to look into why its failing.
-  test.skip('should toggle HTML cleaning', async ({page}) => {
+  test('should toggle HTML cleaning', async ({page}) => {
     const html = '<div><p>Hello</p><style>body{color:red;}</style><script>alert("xss")</script></div>';
 
     await page.evaluate(html => {
@@ -81,6 +80,7 @@ test.describe('MarkPaste functionality', () => {
 
     expect(await htmlCode.textContent()).toContain('<div>');
     expect(await htmlCode.textContent()).not.toContain('<script>');
+    expect(await htmlCode.textContent()).not.toContain('<style>');
   });
 
   test('should retain table structure', async ({page}) => {
