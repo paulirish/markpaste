@@ -1,5 +1,7 @@
 # MarkPaste
 
+[![npm version](https://img.shields.io/npm/v/markpaste.svg)](https://www.npmjs.com/package/markpaste)
+
 MarkPaste is an isomorphic tool that converts rich text to Markdown. It works seamlessly in both the **browser** as a web application and in **Node.js** as a library.
 
 ## Features
