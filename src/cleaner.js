@@ -106,6 +106,28 @@ function processNode(sourceNode, targetParent) {
     }
 
     if (ALLOWED_TAGS.includes(tagName)) {
+      // Special case: B or STRONG with font-weight: normal should be unwrapped
+      if (tagName === 'B' || tagName === 'STRONG') {
+        const style = sourceNode.getAttribute('style') || '';
+        if (/font-weight\s*:\s*(normal|400|lighter)/i.test(style)) {
+          Array.from(sourceNode.childNodes).forEach(child => {
+            processNode(child, targetParent);
+          });
+          return;
+        }
+      }
+
+      // Special case: I or EM with font-style: normal should be unwrapped
+      if (tagName === 'I' || tagName === 'EM') {
+        const style = sourceNode.getAttribute('style') || '';
+        if (/font-style\s*:\s*normal/i.test(style)) {
+          Array.from(sourceNode.childNodes).forEach(child => {
+            processNode(child, targetParent);
+          });
+          return;
+        }
+      }
+
       // Special case: UL/OL without LI children (often a bug in clipboard content)
       // This tweak should only happen when this element is the FIRST element in the received DOM.
       if (tagName === 'UL' || tagName === 'OL') {

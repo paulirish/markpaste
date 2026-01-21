@@ -46,3 +46,24 @@ test('cleaner: handles leading OL/UL tags correctly', async () => {
   assert.strictEqual(cleaned.toLowerCase().includes('<h1'), true);
   assert.strictEqual(cleaned.toLowerCase().includes('manage python packages'), true);
 });
+
+test('cleaner: should unwrap <b style="font-weight: normal"> and equivalents', async () => {
+  const cases = [
+    ['<b style="font-weight: normal">Not bold</b>', 'Not bold'],
+    ['<strong style="font-weight: normal">Not bold</strong>', 'Not bold'],
+    ['<b style="font-weight: 400">Not bold</b>', 'Not bold'],
+    ['<b style="FONT-WEIGHT: NORMAL">Not bold</b>', 'Not bold'],
+    ['<b style="font-weight: lighter">Not bold</b>', 'Not bold'],
+    ['<i style="font-style: normal">Not italic</i>', 'Not italic'],
+    ['<em style="font-style: normal">Not italic</em>', 'Not italic'],
+  ];
+
+  for (const [input, expected] of cases) {
+    const cleaned = await cleanHTML(input);
+    assert.strictEqual(cleaned, expected, `Failed for input: ${input}`);
+  }
+
+  // Should keep normal <b>
+  const bold = await cleanHTML('<b>Bold</b>');
+  assert.ok(bold.toUpperCase().includes('<B>BOLD</B>'));
+});
