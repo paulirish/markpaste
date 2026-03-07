@@ -88,11 +88,12 @@ async function main() {
       process.exit(1);
     }
 
-    const readLabel = `Reading from clipboard (${input.length} chars)`;
-    console.log(readLabel);
-    console.log(`  Preview: ${textToPreview(input, 11)}`);
-
     const isMarkdown = isProbablyMarkdown(input, hasHtmlFlavor);
+
+    console.log('Read from clipboard:');
+    const typeLabel = isMarkdown ? 'Markdown ' : 'HTML     ';
+    const inputLabel = `${typeLabel}(${input.length} chars): `;
+    console.log(`  ${inputLabel}${textToPreview(input, inputLabel.length + 2)}`);
 
     let cleanedHtml;
     let markdown;
