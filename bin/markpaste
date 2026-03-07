@@ -21,10 +21,13 @@ import { marked } from 'marked';
 /**
  * Formats a string for preview in the logs (truncated, escaped, and dimmed).
  */
-function textToPreview(text, length = 100) {
+function textToPreview(text, labelWidth = 0) {
   const dimmedStart = '\x1b[2m';
   const dimmedEnd = '\x1b[22m';
-  const preview = text.substring(0, length).replace(/\n/g, '\\n');
+  const columns = process.stdout.columns || 80;
+  // maxLength = columns - labelWidth - 4 (for " ...") - 1 (safety)
+  const maxLength = Math.max(10, columns - labelWidth - 5);
+  const preview = text.substring(0, maxLength).replace(/\n/g, '\\n');
   return `${dimmedStart}${preview}${dimmedEnd}...`;
 }
 
@@ -85,8 +88,9 @@ async function main() {
       process.exit(1);
     }
 
-    console.log(`Reading from clipboard... (${input.length} chars)`);
-    console.log(`   Preview: ${textToPreview(input)}`);
+    const readLabel = `Reading from clipboard (${input.length} chars)`;
+    console.log(readLabel);
+    console.log(`  Preview: ${textToPreview(input, 11)}`);
 
     const isMarkdown = isProbablyMarkdown(input, hasHtmlFlavor);
 
@@ -94,7 +98,6 @@ async function main() {
     let markdown;
 
     if (isMarkdown) {
-      console.log('✨ Markdown detected. Rendering to HTML...');
       markdown = input;
       cleanedHtml = await marked.parse(input);
     } else {
@@ -102,25 +105,15 @@ async function main() {
       markdown = await convert(input, { clean: true, isMarkdown: false });
     }
 
-    console.log('Updating clipboard...');
     setClipboard(cleanedHtml, markdown);
 
-    // // Verification Step
-    // const verifiedHtml = readHtmlFromClipboard();
-    // if (verifiedHtml === cleanedHtml) {
-    //   console.log('✅ Clipboard verified: HTML flavor matches perfectly.');
-    // } else {
-    //   console.warn('⚠️  Clipboard verification mismatch!');
-    //   if (!verifiedHtml) {
-    //     console.warn('   Reason: No HTML flavor found after setting.');
-    //   } else {
-    //     console.warn(`   Reason: Length difference (${cleanedHtml.length} vs ${verifiedHtml.length})`);
-    //   }
-    // }
+    const mdLabel = `Markdown (${markdown.length} chars): `;
+    const htmlLabel = `HTML     (${cleanedHtml.length} chars): `;
+    const labelWidth = Math.max(mdLabel.length, htmlLabel.length) + 2;
 
-    console.log('\n✅ Clipboard updated with:');
-    console.log(`   - Plain Text (Markdown): ${textToPreview(markdown)}`);
-    console.log(`   - HTML (Cleaned): ${textToPreview(cleanedHtml)}`);
+    console.log('\nClipboard updated with:');
+    console.log(`  ${mdLabel.padEnd(labelWidth - 2)}${textToPreview(markdown, labelWidth)}`);
+    console.log(`  ${htmlLabel.padEnd(labelWidth - 2)}${textToPreview(cleanedHtml, labelWidth)}`);
 
   } catch (err) {
     console.error('Error during conversion:', err);
