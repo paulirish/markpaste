@@ -21,7 +21,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 22.14.0 # Minimum for Trusted Publishing
           registry-url: 'https://registry.npmjs.org'
           cache: 'pnpm'
 
@@ -31,6 +31,4 @@ jobs:
       - run: pnpm test
 
       - name: Publish to npm
-        run: pnpm publish --provenance --no-git-checks
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: pnpm publish --no-git-checks
