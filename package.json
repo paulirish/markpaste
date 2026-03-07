@@ -15,8 +15,17 @@
     "test:node": "node --test test/node/**/*.test.js"
   },
   "packageManager": "pnpm@10.22.0",
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "markdown",
+    "html",
+    "clipboard",
+    "isomorphic"
+  ],
+  "author": "Paul Irish <npm@paul.irish>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/paulirish/markpaste"
+  },
   "license": "Apache-2.0",
   "type": "module",
   "devDependencies": {
