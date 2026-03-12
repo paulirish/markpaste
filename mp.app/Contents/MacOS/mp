@@ -1,0 +1,9 @@
+#!/bin/bash
+# Re-enable standard paths just in case OS launches without them
+export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+# Go up from mp.app/Contents/MacOS to the project root
+cd "$(dirname "$0")/../../.."
+
+# Run the markpaste CLI
+./bin/markpaste
