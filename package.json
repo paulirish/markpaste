@@ -14,7 +14,7 @@
     "test:web": "playwright test",
     "test:node": "node --test test/node/**/*.test.js",
     "build:app": "./scripts/build-app.sh",
-    "install:app": "pnpm run build:app && rm -rf /Applications/MarkPaste.app && cp -R dist/MarkPaste.app /Applications/ && mdimport /Applications/MarkPaste.app"
+    "install:app": "pnpm run build:app && rm -rf /Applications/MarkPaste.app && mv dist/MarkPaste.app /Applications/ && mdimport /Applications/MarkPaste.app"
   },
   "packageManager": "pnpm@10.22.0",
   "keywords": [

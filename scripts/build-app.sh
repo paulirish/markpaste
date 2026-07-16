@@ -16,6 +16,7 @@ echo "=== Building MarkPaste.app in dist/ ==="
 rm -rf "$APP_DIR"
 mkdir -p "$MACOS_DIR"
 mkdir -p "$RESOURCES_DIR"
+touch "$DIST_DIR/.metadata_never_index"
 
 # Copy static mac assets
 cp "$REPO_ROOT/mac/Info.plist" "$CONTENTS_DIR/Info.plist"
