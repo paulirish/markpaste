@@ -13,7 +13,8 @@
     "test": "pnpm run typecheck && pnpm run test:node && pnpm run test:web",
     "test:web": "playwright test",
     "test:node": "node --test test/node/**/*.test.js",
-    "install:app": "rm -rf /Applications/MarkPaste.app && cp -R MarkPaste.app /Applications/ && mdimport /Applications/MarkPaste.app"
+    "build:app": "./scripts/build-app.sh",
+    "install:app": "pnpm run build:app && rm -rf /Applications/MarkPaste.app && cp -R MarkPaste.app /Applications/ && mdimport /Applications/MarkPaste.app"
   },
   "packageManager": "pnpm@10.22.0",
   "keywords": [

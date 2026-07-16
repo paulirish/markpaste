@@ -4,3 +4,7 @@ test-results/
 
 .pnpm-store
 node_modules
+
+# macOS App build outputs
+MarkPaste.app/Contents/Resources/run.sh
+MarkPaste.app/Contents/Resources/app/
