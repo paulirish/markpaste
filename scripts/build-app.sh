@@ -3,13 +3,23 @@ set -e
 
 # Repository root
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-APP_DIR="$REPO_ROOT/MarkPaste.app"
+DIST_DIR="$REPO_ROOT/dist"
+APP_DIR="$DIST_DIR/MarkPaste.app"
 CONTENTS_DIR="$APP_DIR/Contents"
 MACOS_DIR="$CONTENTS_DIR/MacOS"
 RESOURCES_DIR="$CONTENTS_DIR/Resources"
 TARGET_APP_DIR="$RESOURCES_DIR/app"
 
-echo "=== Building MarkPaste.app ==="
+echo "=== Building MarkPaste.app in dist/ ==="
+
+# Clean and recreate APP_DIR structure
+rm -rf "$APP_DIR"
+mkdir -p "$MACOS_DIR"
+mkdir -p "$RESOURCES_DIR"
+
+# Copy static mac assets
+cp "$REPO_ROOT/mac/Info.plist" "$CONTENTS_DIR/Info.plist"
+cp "$REPO_ROOT/mac/AppIcon.icns" "$RESOURCES_DIR/AppIcon.icns"
 
 # 1. Compile launcher binary
 echo "Compiling launcher binary..."
