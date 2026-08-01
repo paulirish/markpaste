@@ -95,6 +95,18 @@ function processNode(sourceNode, targetParent) {
   if (sourceNode.nodeType === NodeGlobal.ELEMENT_NODE) {
     const tagName = sourceNode.tagName.toUpperCase();
 
+    // Keep math elements and strip their children
+    if (sourceNode.hasAttribute('data-math')) {
+      const newElement = documentGlobal.createElement(tagName);
+      newElement.setAttribute('data-math', sourceNode.getAttribute('data-math'));
+      if (sourceNode.hasAttribute('class')) {
+        newElement.setAttribute('class', sourceNode.getAttribute('class'));
+      }
+      newElement.appendChild(documentGlobal.createTextNode(sourceNode.getAttribute('data-math')));
+      targetParent.appendChild(newElement);
+      return;
+    }
+
     // MDN specific cleaning: remove copy button and play links
     if (sourceNode.classList && sourceNode.classList.contains('mdn-copy-button')) {
       return;

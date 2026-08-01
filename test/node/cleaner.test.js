@@ -67,3 +67,14 @@ test('cleaner: should unwrap <b style="font-weight: normal"> and equivalents', a
   const bold = await cleanHTML('<b>Bold</b>');
   assert.ok(bold.toUpperCase().includes('<B>BOLD</B>'));
 });
+
+test('cleaner: cleanHTML should handle data-math elements correctly', async () => {
+  const html = '<div class="math-block animating" data-math="P(Unknown | x) = 1"><span class="katex-display">KaTeX Math</span></div>';
+  const cleaned = await cleanHTML(html);
+  
+  assert.strictEqual(cleaned.includes('class="math-block animating"'), true);
+  assert.strictEqual(cleaned.includes('data-math="P(Unknown | x) = 1"'), true);
+  assert.strictEqual(cleaned.includes('P(Unknown | x) = 1</DIV>'), true); // Keeps formula text content
+  assert.strictEqual(cleaned.includes('KaTeX Math'), false); // Inner children should be discarded
+});
+

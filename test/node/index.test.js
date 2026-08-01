@@ -34,3 +34,18 @@ test('library: convert should NOT short-circuit if isMarkdown: false is passed',
   // Turndown escapes # if it's not a real header
   assert.strictEqual(result.trim(), '\\# Not Markdown');
 });
+
+test('library: convert should handle math blocks and inline math correctly', async () => {
+  const html = '<div class="math-block animating" data-math="P(\\text{Unknown} \\mid \\mathbf{x}) = 1 - \\exp\\left( -\\left( \\frac{\\max(0, \\Vert{}\\mathbf{x} - \\boldsymbol{\\mu}_k\\Vert{}_2 - \\tau_k)}{\\lambda_k} \\right)^{\\kappa_k} \\right)"><span class="katex-display animating"><span class="katex">...</span></span></div>' +
+               '<p>And some inline math <span class="math-inline" data-math="d(\\mathbf{x}, \\boldsymbol{\\mu}_k) = \\Vert{}\\mathbf{x} - \\boldsymbol{\\mu}_k\\Vert{}_2"><span class="katex">...</span></span> here.</p>';
+  const markdown = await convert(html);
+  
+  const expectedBlock = '$$\n' +
+                        'P(\\text{Unknown} \\mid \\mathbf{x}) = 1 - \\exp\\left( -\\left( \\frac{\\max(0, \\Vert{}\\mathbf{x} - \\boldsymbol{\\mu}_k\\Vert{}_2 - \\tau_k)}{\\lambda_k} \\right)^{\\kappa_k} \\right)\n' +
+                        '$$';
+  const expectedInline = 'And some inline math $d(\\mathbf{x}, \\boldsymbol{\\mu}_k) = \\Vert{}\\mathbf{x} - \\boldsymbol{\\mu}_k\\Vert{}_2$ here.';
+
+  assert.strictEqual(markdown.includes(expectedBlock), true);
+  assert.strictEqual(markdown.includes(expectedInline), true);
+});
+

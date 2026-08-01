@@ -28,6 +28,39 @@ async function getTurndownConverter() {
     turndownService.use(turndownPluginGfm);
   }
 
+  // Handle Math Blocks: e.g. <div class="math-block" data-math="P(x) = y">
+  turndownService.addRule('mathBlock', {
+    filter: function (node, options) {
+      if (!node.getAttribute || !node.getAttribute('data-math')) return false;
+      const className = node.getAttribute('class') || '';
+      if (/math-inline/i.test(className)) return false;
+      if (/math-block/i.test(className)) return true;
+      const tag = node.nodeName.toUpperCase();
+      return ['DIV', 'P', 'SECTION', 'BLOCKQUOTE'].includes(tag);
+    },
+    replacement: function (content, node, options) {
+      const math = (node.getAttribute('data-math') || '').trim();
+      return '\n\n$$\n' + math + '\n$$\n\n';
+    }
+  });
+
+  // Handle Math Inline: e.g. <span class="math-inline" data-math="a + b">
+  turndownService.addRule('mathInline', {
+    filter: function (node, options) {
+      if (!node.getAttribute || !node.getAttribute('data-math')) return false;
+      const className = node.getAttribute('class') || '';
+      if (/math-block/i.test(className)) return false;
+      if (/math-inline/i.test(className)) return true;
+      const tag = node.nodeName.toUpperCase();
+      return !['DIV', 'P', 'SECTION', 'BLOCKQUOTE'].includes(tag);
+    },
+    replacement: function (content, node, options) {
+      const math = (node.getAttribute('data-math') || '').trim();
+      return '$' + math + '$';
+    }
+  });
+
+
   return {
     convert: html => turndownService.turndown(html),
   };

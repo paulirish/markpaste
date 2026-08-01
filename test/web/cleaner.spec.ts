@@ -29,4 +29,33 @@ test.describe('Cleaner functionality', () => {
     await expect(outputCode).toContainText('Normal Link');
     await expect(outputCode).toContainText("console.log('hello');");
   });
+
+  test('should clean and convert math blocks and math inline elements', async ({page}) => {
+    const html = `
+      <div class="math-block animating" data-math="P(\\text{Unknown} \\mid \\mathbf{x}) = 1 - \\exp(x)">
+        <span class="katex-display"><span class="katex">KaTeX visual elements</span></span>
+      </div>
+      <p>Here is <span class="math-inline" data-math="d(\\mathbf{x}, \\boldsymbol{\\mu}_k) = 2"><span class="katex">KaTeX inline</span></span> inside paragraph.</p>
+    `;
+
+    await page.evaluate(html => {
+      const inputArea = document.getElementById('inputArea');
+      inputArea.innerHTML = html;
+      inputArea.dispatchEvent(new Event('input', {bubbles: true}));
+    }, html);
+
+    const outputCode = page.locator('#outputCodeTurndown');
+    
+    // Check block math output
+    await expect(outputCode).toContainText('$$');
+    await expect(outputCode).toContainText('P(\\text{Unknown} \\mid \\mathbf{x}) = 1 - \\exp(x)');
+    
+    // Check inline math output
+    await expect(outputCode).toContainText('$d(\\mathbf{x}, \\boldsymbol{\\mu}_k) = 2$');
+    
+    // Ensure KaTeX fallback/visual texts are not included
+    await expect(outputCode).not.toContainText('KaTeX visual elements');
+    await expect(outputCode).not.toContainText('KaTeX inline');
+  });
 });
+
