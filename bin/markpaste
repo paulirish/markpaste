@@ -32,6 +32,40 @@ function textToPreview(text, labelWidth = 0) {
 }
 
 /**
+ * Decodes raw clipboard bytes, detecting the encoding from the content.
+ * Tries UTF-8 first. On failure, checks for a <meta charset> declaration
+ * and falls back to windows-1252 (the HTML spec default for undeclared charset).
+ * @param {Buffer} buf
+ * @returns {string}
+ */
+function decodeClipboardHtml(buf) {
+  // Try UTF-8 first (most modern apps use it)
+  try {
+    return new TextDecoder('utf-8', {fatal: true}).decode(buf);
+  } catch {
+    // Not valid UTF-8 — detect charset from meta tags
+  }
+
+  // Parse enough of the bytes as ASCII to find a charset declaration
+  const head = buf.subarray(0, Math.min(buf.length, 2048)).toString('ascii');
+  const charsetMatch =
+    head.match(/<meta[^>]+charset=['"]?([^'"\s;>]+)/i) ||
+    head.match(/<meta[^>]+content=['"][^'"]*charset=([^'"\s;>]+)/i);
+  const declared = charsetMatch?.[1]?.toLowerCase();
+
+  if (declared) {
+    try {
+      return new TextDecoder(declared).decode(buf);
+    } catch {
+      // Unrecognized charset label, fall through
+    }
+  }
+
+  // HTML spec default when no charset is declared
+  return new TextDecoder('windows-1252').decode(buf);
+}
+
+/**
  * Reads the HTML flavor from the macOS clipboard.
  * Returns null if no HTML flavor is present.
  */
@@ -41,7 +75,7 @@ function readHtmlFromClipboard() {
     const hexData = execSync(`osascript -e '${script}'`, { encoding: 'utf8' }).trim();
     const match = hexData.match(/«data HTML([0-9A-F]*)»/i);
     if (match && match[1]) {
-      return Buffer.from(match[1], 'hex').toString('utf8');
+      return decodeClipboardHtml(Buffer.from(match[1], 'hex'));
     }
   } catch (e) {
     // Silently fail to return null
