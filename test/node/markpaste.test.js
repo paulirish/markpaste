@@ -57,6 +57,9 @@ if (os.platform() === 'darwin') {
     assert.strictEqual(htmlData.includes('«data HTML'), true);
 
     const match = htmlData.match(/«data HTML([0-9A-F]*)»/i);
+    if (!match || !match[1]) {
+      assert.fail('Could not extract HTML hex from clipboard');
+    }
     const resultHtml = Buffer.from(match[1], 'hex').toString('utf8');
     assert.strictEqual(resultHtml.toLowerCase().includes('<h1>md test</h1>'), true);
     assert.strictEqual(resultHtml.toLowerCase().includes('<li>item 1</li>'), true);

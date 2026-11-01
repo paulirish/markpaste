@@ -96,7 +96,7 @@ async function main() {
       markdown = input;
       cleanedHtml = await marked.parse(input);
     } else {
-      cleanedHtml = await cleanHTML(input);
+      cleanedHtml = cleanHTML(input);
       markdown = await convert(input, { clean: true, isMarkdown: false });
     }
 

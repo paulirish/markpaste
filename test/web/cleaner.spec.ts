@@ -3,6 +3,7 @@ import {test, expect} from '@playwright/test';
 test.describe('Cleaner functionality', () => {
   test.beforeEach(async ({page}) => {
     await page.goto('http://127.0.0.1:7025/index.html');
+    await expect(page.locator('#loadingOverlay')).toHaveClass(/hidden/);
   });
 
   test('should remove MDN copy button and play links', async ({page}) => {
@@ -18,6 +19,7 @@ test.describe('Cleaner functionality', () => {
 
     await page.evaluate(html => {
       const inputArea = document.getElementById('inputArea');
+      if (!inputArea) throw new Error('#inputArea not found');
       inputArea.innerHTML = html;
       inputArea.dispatchEvent(new Event('input', {bubbles: true}));
     }, html);
@@ -40,22 +42,22 @@ test.describe('Cleaner functionality', () => {
 
     await page.evaluate(html => {
       const inputArea = document.getElementById('inputArea');
+      if (!inputArea) throw new Error('#inputArea not found');
       inputArea.innerHTML = html;
       inputArea.dispatchEvent(new Event('input', {bubbles: true}));
     }, html);
 
     const outputCode = page.locator('#outputCodeTurndown');
-    
+
     // Check block math output
     await expect(outputCode).toContainText('$$');
     await expect(outputCode).toContainText('P(\\text{Unknown} \\mid \\mathbf{x}) = 1 - \\exp(x)');
-    
+
     // Check inline math output
     await expect(outputCode).toContainText('$d(\\mathbf{x}, \\boldsymbol{\\mu}_k) = 2$');
-    
+
     // Ensure KaTeX fallback/visual texts are not included
     await expect(outputCode).not.toContainText('KaTeX visual elements');
     await expect(outputCode).not.toContainText('KaTeX inline');
   });
 });
-

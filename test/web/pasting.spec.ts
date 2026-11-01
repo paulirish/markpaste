@@ -3,12 +3,14 @@ import {test, expect} from '@playwright/test';
 test.describe('MarkPaste functionality', () => {
   test.beforeEach(async ({page}) => {
     await page.goto('http://127.0.0.1:7025/index.html');
+    await expect(page.locator('#loadingOverlay')).toHaveClass(/hidden/);
   });
 
   test('should convert basic rich text to markdown', async ({page}) => {
     const html = '<p>Hello <b>world</b></p>';
     await page.evaluate(html => {
       const inputArea = document.getElementById('inputArea');
+      if (!inputArea) throw new Error('#inputArea not found');
       inputArea.innerHTML = html;
       inputArea.dispatchEvent(new Event('input', {bubbles: true}));
     }, html);
@@ -27,6 +29,7 @@ test.describe('MarkPaste functionality', () => {
 
     await page.evaluate(html => {
       const inputArea = document.getElementById('inputArea');
+      if (!inputArea) throw new Error('#inputArea not found');
       inputArea.innerHTML = html;
       inputArea.dispatchEvent(new Event('input', {bubbles: true}));
     }, html);
@@ -44,6 +47,7 @@ test.describe('MarkPaste functionality', () => {
     const html = '<h3>Hello World</h3>';
     await page.evaluate(html => {
       const inputArea = document.getElementById('inputArea');
+      if (!inputArea) throw new Error('#inputArea not found');
       inputArea.innerHTML = html;
       inputArea.dispatchEvent(new Event('input', {bubbles: true}));
     }, html);
@@ -61,6 +65,7 @@ test.describe('MarkPaste functionality', () => {
 
     await page.evaluate(html => {
       const inputArea = document.getElementById('inputArea');
+      if (!inputArea) throw new Error('#inputArea not found');
       inputArea.innerHTML = html;
       inputArea.dispatchEvent(new Event('input', {bubbles: true}));
     }, html);
@@ -68,7 +73,7 @@ test.describe('MarkPaste functionality', () => {
     const htmlCode = page.locator('#htmlCode');
 
     // Initially, "Clean HTML" is checked
-    await page.waitForFunction(() => document.getElementById('outputCodeTurndown').textContent.includes('Hello'));
+    await page.waitForFunction(() => document.getElementById('outputCodeTurndown')?.textContent?.includes('Hello'));
     expect(await htmlCode.textContent()).not.toContain('<div>');
     expect(await htmlCode.textContent()).not.toContain('<script>');
 
@@ -102,6 +107,7 @@ test.describe('MarkPaste functionality', () => {
 
     await page.evaluate(html => {
       const inputArea = document.getElementById('inputArea');
+      if (!inputArea) throw new Error('#inputArea not found');
       inputArea.innerHTML = html;
       inputArea.dispatchEvent(new Event('input', {bubbles: true}));
     }, html);
@@ -120,6 +126,7 @@ test.describe('MarkPaste functionality', () => {
     // Simulate paste event
     await page.evaluate(text => {
       const inputArea = document.getElementById('inputArea');
+      if (!inputArea) throw new Error('#inputArea not found');
       const dataTransfer = new DataTransfer();
       dataTransfer.setData('text/plain', text);
       const event = new ClipboardEvent('paste', {

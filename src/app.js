@@ -69,7 +69,15 @@ const loadingOverlay = $('div#loadingOverlay');
 const viewMarkdownBtn = $('button#viewMarkdownBtn');
 const viewRenderedBtn = $('button#viewRenderedBtn');
 
+/**
+ * @typedef {Object} OutputElementGroup
+ * @property {HTMLElement} code
+ * @property {HTMLElement} preview
+ * @property {HTMLElement} pre
+ */
+
 // Output Elements
+/** @type {Record<string, OutputElementGroup>} */
 const outputs = {
   turndown: {
     code: $('code#outputCodeTurndown'),
@@ -84,17 +92,17 @@ const outputs = {
 };
 
 let lastProcessedContent = '';
+/** @type {Record<string, import('./converter.js').Converter>} */
 const converters = {};
-const convertersPromise = (async () => {
-  const names = ['turndown', 'pandoc'];
-  for (const name of names) {
+const convertersPromise = Promise.all(
+  ['turndown', 'pandoc'].map(async name => {
     try {
       converters[name] = await getConverter(name);
     } catch (e) {
       console.error(`Failed to load converter: ${name}`, e);
     }
-  }
-})();
+  })
+);
 
 let currentView = 'markdown'; // 'markdown' or 'rendered'
 
@@ -133,12 +141,13 @@ async function startIdleDetector() {
 
         if (userState === 'idle') {
           // Unload pandoc if it exists
-          if (converters.pandoc) {
+          const pandocConverter = converters['pandoc'];
+          if (pandocConverter) {
             console.log('User is idle. Unloading pandoc module to free memory.');
-            if (converters.pandoc.dispose) {
-              converters.pandoc.dispose();
+            if (pandocConverter.dispose) {
+              pandocConverter.dispose();
             }
-            delete converters.pandoc;
+            delete converters['pandoc'];
           }
         }
       });
@@ -205,6 +214,9 @@ function setupEventListeners() {
   document.on('keydown', handleSelectAll);
 }
 
+/**
+ * @param {'markdown' | 'rendered'} view
+ */
 function switchView(view) {
   currentView = view;
 
@@ -230,7 +242,11 @@ function switchView(view) {
   }
 }
 
+/**
+ * @param {Event} e
+ */
 function handleSelectAll(e) {
+  if (!(e instanceof KeyboardEvent)) return;
   if ((e.metaKey || e.ctrlKey) && e.key === 'a') {
     const activeElement = document.activeElement;
     if (activeElement) {
@@ -257,10 +273,15 @@ function hideLoading() {
   loadingOverlay.classList.add('hidden');
 }
 
+/**
+ * @param {Event} e
+ */
 async function handlePaste(e) {
+  if (!(e instanceof ClipboardEvent)) return;
   e.preventDefault();
 
   const clipboardData = e.clipboardData;
+  if (!clipboardData) return;
   const pastedHtml = clipboardData.getData('text/html');
   const pastedText = clipboardData.getData('text/plain');
 
@@ -291,15 +312,20 @@ async function handlePaste(e) {
   }, 2000);
 }
 
+/**
+ * @param {string} content
+ * @param {boolean | null} [isMarkdown=null]
+ */
 async function processContent(content, isMarkdown = null) {
+  await convertersPromise;
+
   let htmlToShow;
+  /** @type {Record<string, string>} */
   let markdownResults;
 
-  if (isMarkdown === null) {
-    isMarkdown = isProbablyMarkdown(content, false);
-  }
+  const isMd = isMarkdown !== null ? isMarkdown : isProbablyMarkdown(content, false);
 
-  if (isMarkdown) {
+  if (isMd) {
     // If it's markdown, the "results" are just the content itself.
     markdownResults = {
       turndown: content,
@@ -324,16 +350,17 @@ async function processContent(content, isMarkdown = null) {
 
   // Update UI with results
   for (const [name, markdown] of Object.entries(markdownResults)) {
-    if (outputs[name]) {
-      outputs[name].code.textContent = markdown;
+    const outputGroup = outputs[name];
+    if (outputGroup) {
+      outputGroup.code.textContent = markdown;
       if (window.Prism) {
-        window.Prism.highlightElement(outputs[name].code);
+        window.Prism.highlightElement(outputGroup.code);
       }
     }
   }
 
   // Fire and forget the diff check
-  if (!isMarkdown) {
+  if (!isMd) {
     checkDiffs(markdownResults);
   }
 
@@ -342,7 +369,12 @@ async function processContent(content, isMarkdown = null) {
   }
 }
 
+/**
+ * @param {string} htmlContent
+ * @returns {Record<string, string>}
+ */
 function runConverters(htmlContent) {
+  /** @type {Record<string, string>} */
   const results = {};
   for (const [name, converter] of Object.entries(converters)) {
     if (converter) {
@@ -350,23 +382,27 @@ function runConverters(htmlContent) {
         results[name] = converter.convert(htmlContent);
       } catch (err) {
         console.error(`Converter ${name} failed:`, err);
-        results[name] = `Error converting with ${name}: ${err.message}`;
+        const errMsg = err instanceof Error ? err.message : String(err);
+        results[name] = `Error converting with ${name}: ${errMsg}`;
       }
     }
   }
   return results;
 }
 
+/**
+ * @param {Record<string, string>} results
+ */
 async function checkDiffs(results) {
   // We need both to be present and not error messages
-  if (!results.turndown || !results.pandoc) return;
-  if (results.turndown.startsWith('Error converting') || results.pandoc.startsWith('Error converting')) return;
+  if (!results['turndown'] || !results['pandoc']) return;
+  if (results['turndown'].startsWith('Error converting') || results['pandoc'].startsWith('Error converting')) return;
 
   const tDiv = document.createElement('div');
   const pDiv = document.createElement('div');
 
-  await renderMarkdown(results.turndown, tDiv);
-  await renderMarkdown(results.pandoc, pDiv);
+  await renderMarkdown(results['turndown'], tDiv);
+  await renderMarkdown(results['pandoc'], pDiv);
 
   const turndownHtml = tDiv.innerHTML;
   const pandocHtml = pDiv.innerHTML;
@@ -394,6 +430,10 @@ async function updateRenderedPreviews() {
   }
 }
 
+/**
+ * @param {string} html
+ * @returns {string}
+ */
 function formatHTML(html) {
   // Simple formatter for the HTML preview
   if (!html) return '';
@@ -403,7 +443,7 @@ function formatHTML(html) {
   const xml = html.replace(reg, '$1\r\n$2$3');
   let pad = 0;
 
-  xml.split('\r\n').forEach(node => {
+  xml.split('\r\n').forEach((/** @type {string} */ node) => {
     let indent = 0;
     if (node.match(/.+<\/\w[^>]*>$/)) {
       indent = 0;
@@ -432,10 +472,11 @@ function formatHTML(html) {
 async function copyToClipboard() {
   startIdleDetector();
 
-  const selectedRadio = $('input[name="converter"]:checked');
+  const selectedRadio = /** @type {HTMLInputElement | null} */ (document.querySelector('input[name="converter"]:checked'));
   const selectedName = selectedRadio ? selectedRadio.value : 'turndown';
 
-  const textToCopy = outputs[selectedName].code.textContent;
+  const outputGroup = outputs[selectedName] || outputs['turndown'];
+  const textToCopy = outputGroup ? outputGroup.code.textContent || '' : '';
 
   // Let's grab the HTML from the preview div if we can, or render it if it's empty.
   let htmlToCopy;
@@ -445,9 +486,10 @@ async function copyToClipboard() {
   htmlToCopy = tempDiv.innerHTML;
 
   // Store original text for restoration
-  const originalText = copyBtn.textContent;
+  const originalText = copyBtn.textContent || '';
 
   try {
+    /** @type {Record<string, Blob>} */
     const items = {
       'text/plain': new Blob([textToCopy], {type: 'text/plain'}),
     };
@@ -470,6 +512,7 @@ async function copyToClipboard() {
     copyBtn.textContent = 'Copy failed';
     setTimeout(() => {
       copyBtn.innerHTML = originalText;
+      copyBtn.classList.remove('success');
     }, 2000);
   }
 }

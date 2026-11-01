@@ -19,25 +19,34 @@ if (isBrowser) {
 const {WASI, OpenFile, File, ConsoleStdout, PreopenDirectory} = WasiShim;
 
 const args = ['pandoc.wasm', '+RTS', '-H64m', '-RTS'];
+/** @type {string[]} */
 const env = [];
-let in_file = new File(new Uint8Array(), {readonly: true});
-let out_file = new File(new Uint8Array(), {readonly: false});
+const initial_in_file = new File(new Uint8Array(), {readonly: true});
+const initial_out_file = new File(new Uint8Array(), {readonly: false});
+/** @type {WasiShimT.File | null} */
+let in_file = initial_in_file;
+/** @type {WasiShimT.File | null} */
+let out_file = initial_out_file;
 const fds = [
   new OpenFile(new File(new Uint8Array(), {readonly: true})),
-  ConsoleStdout.lineBuffered(msg => console.log(`[WASI stdout] ${msg}`)),
-  ConsoleStdout.lineBuffered(msg => console.warn(`[WASI stderr] ${msg}`)),
+  ConsoleStdout.lineBuffered((/** @type {string} */ msg) => console.log(`[WASI stdout] ${msg}`)),
+  ConsoleStdout.lineBuffered((/** @type {string} */ msg) => console.warn(`[WASI stderr] ${msg}`)),
   new PreopenDirectory(
     '/',
     new Map([
-      ['in', in_file],
-      ['out', out_file],
+      ['in', initial_in_file],
+      ['out', initial_out_file],
     ])
   ),
 ];
 const options = {debug: false};
+/** @type {WasiShimT.WASI | null} */
 let wasi = new WASI(args, env, fds, options);
 
 async function loadWasm() {
+  if (!wasi) {
+    throw new Error('WASI is not initialized');
+  }
   if (isBrowser) {
     const response = await fetch('third_party/pandoc.wasm');
     const bytes = await response.arrayBuffer();
@@ -58,12 +67,18 @@ async function loadWasm() {
 }
 
 const source = await loadWasm();
+/** @type {PandocWasm.PandocWasmInstance | null} */
 let instance = /** @type {PandocWasm.PandocWasmInstance} */ (source.instance);
 
-wasi.initialize(instance);
+if (wasi) {
+  wasi.initialize(instance);
+}
 instance.exports.__wasm_call_ctors();
 
 function memory_data_view() {
+  if (!instance) {
+    throw new Error('Pandoc WASM instance not found');
+  }
   return new DataView(instance.exports.memory.buffer);
 }
 
@@ -82,7 +97,15 @@ memory_data_view().setUint32(argv_ptr, argv, true);
 
 instance.exports.hs_init_with_rtsopts(argc_ptr, argv_ptr);
 
+/**
+ * @param {string} args_str
+ * @param {string} in_str
+ * @returns {string}
+ */
 export function pandoc(args_str, in_str) {
+  if (!instance || !in_file || !out_file) {
+    throw new Error('Pandoc WASM instance is not initialized or disposed');
+  }
   const args_ptr = instance.exports.malloc(args_str.length);
   new TextEncoder().encodeInto(args_str, new Uint8Array(instance.exports.memory.buffer, args_ptr, args_str.length));
   in_file.data = new TextEncoder().encode(in_str);

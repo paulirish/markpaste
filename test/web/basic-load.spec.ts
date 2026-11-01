@@ -41,6 +41,7 @@ test('should load the page without errors or 404s', async ({page}) => {
 
 test('should paste HTML and update all 2 markdown outputs', async ({page}) => {
   await page.goto('http://127.0.0.1:7025/index.html');
+  await expect(page.locator('#loadingOverlay')).toHaveClass(/hidden/);
 
   const testHtml = '<h1>Test Title</h1><p>Hello <strong>world</strong></p>';
 

@@ -24,7 +24,7 @@ export async function convert(input, options = {}) {
     return input;
   }
 
-  const cleanedHtml = clean ? await cleanHTML(input) : await removeStyleAttributes(input);
+  const cleanedHtml = clean ? cleanHTML(input) : removeStyleAttributes(input);
   const converter = await getConverter(converterName);
 
   return converter.convert(cleanedHtml);

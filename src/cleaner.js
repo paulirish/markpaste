@@ -4,7 +4,12 @@
  */
 
 // Environment detection and DOM setup
-let parseHTMLGlobal, documentGlobal, NodeGlobal;
+/** @type {(html: string) => Document} */
+let parseHTMLGlobal;
+/** @type {Document} */
+let documentGlobal;
+/** @type {typeof Node} */
+let NodeGlobal;
 
 if (typeof window !== 'undefined') {
   parseHTMLGlobal = html => {
@@ -18,11 +23,11 @@ if (typeof window !== 'undefined') {
   const {parseHTML} = await import('linkedom');
   parseHTMLGlobal = html => {
     const fullHtml = `<!DOCTYPE html><html><body>${html}</body></html>`;
-    return parseHTML(fullHtml).document;
+    return /** @type {Document} */ (parseHTML(fullHtml).document);
   };
   const linkedom = parseHTML('<html><body></body></html>');
-  documentGlobal = linkedom.document;
-  NodeGlobal = linkedom.Node;
+  documentGlobal = /** @type {Document} */ (linkedom.document);
+  NodeGlobal = /** @type {typeof Node} */ (linkedom.Node);
 }
 
 const ALLOWED_TAGS = [
@@ -57,16 +62,25 @@ const ALLOWED_TAGS = [
   'TD',
 ];
 
+/** @type {Record<string, string[]>} */
 const ALLOWED_ATTRIBUTES = {
   A: ['href', 'title', 'target'],
   IMG: ['src', 'alt', 'title', 'width', 'height'],
 };
 
+/**
+ * @param {string} html
+ * @returns {string}
+ */
 export function cleanHTML(html) {
   const doc = parseHTMLGlobal(html);
   const sourceBody = doc.body;
+  if (!sourceBody) {
+    return '';
+  }
 
   // Create a new document for the cleaned output
+  /** @type {HTMLElement} */
   let targetBody;
   if (documentGlobal.implementation && documentGlobal.implementation.createHTMLDocument) {
     const cleanDoc = documentGlobal.implementation.createHTMLDocument('clean');
@@ -82,6 +96,10 @@ export function cleanHTML(html) {
   return targetBody.innerHTML;
 }
 
+/**
+ * @param {Node} sourceNode
+ * @param {Node} targetParent
+ */
 function processNode(sourceNode, targetParent) {
   // Handle text nodes
   if (sourceNode.nodeType === NodeGlobal.TEXT_NODE) {
@@ -93,26 +111,28 @@ function processNode(sourceNode, targetParent) {
 
   // Handle element nodes
   if (sourceNode.nodeType === NodeGlobal.ELEMENT_NODE) {
-    const tagName = sourceNode.tagName.toUpperCase();
+    const sourceElement = /** @type {HTMLElement} */ (sourceNode);
+    const tagName = sourceElement.tagName.toUpperCase();
 
     // Keep math elements and strip their children
-    if (sourceNode.hasAttribute('data-math')) {
+    if (sourceElement.hasAttribute('data-math')) {
+      const mathData = sourceElement.getAttribute('data-math') || '';
       const newElement = documentGlobal.createElement(tagName);
-      newElement.setAttribute('data-math', sourceNode.getAttribute('data-math'));
-      if (sourceNode.hasAttribute('class')) {
-        newElement.setAttribute('class', sourceNode.getAttribute('class'));
+      newElement.setAttribute('data-math', mathData);
+      if (sourceElement.hasAttribute('class')) {
+        newElement.setAttribute('class', sourceElement.getAttribute('class') || '');
       }
-      newElement.appendChild(documentGlobal.createTextNode(sourceNode.getAttribute('data-math')));
+      newElement.appendChild(documentGlobal.createTextNode(mathData));
       targetParent.appendChild(newElement);
       return;
     }
 
     // MDN specific cleaning: remove copy button and play links
-    if (sourceNode.classList && sourceNode.classList.contains('mdn-copy-button')) {
+    if (sourceElement.classList && sourceElement.classList.contains('mdn-copy-button')) {
       return;
     }
 
-    const href = sourceNode.getAttribute('href');
+    const href = sourceElement.getAttribute('href');
     if (tagName === 'A' && href && href.startsWith('https://developer.mozilla.org/en-US/play')) {
       return;
     }
@@ -120,9 +140,9 @@ function processNode(sourceNode, targetParent) {
     if (ALLOWED_TAGS.includes(tagName)) {
       // Special case: B or STRONG with font-weight: normal should be unwrapped
       if (tagName === 'B' || tagName === 'STRONG') {
-        const style = sourceNode.getAttribute('style') || '';
+        const style = sourceElement.getAttribute('style') || '';
         if (/font-weight\s*:\s*(normal|400|lighter)/i.test(style)) {
-          Array.from(sourceNode.childNodes).forEach(child => {
+          Array.from(sourceElement.childNodes).forEach(child => {
             processNode(child, targetParent);
           });
           return;
@@ -131,9 +151,9 @@ function processNode(sourceNode, targetParent) {
 
       // Special case: I or EM with font-style: normal should be unwrapped
       if (tagName === 'I' || tagName === 'EM') {
-        const style = sourceNode.getAttribute('style') || '';
+        const style = sourceElement.getAttribute('style') || '';
         if (/font-style\s*:\s*normal/i.test(style)) {
-          Array.from(sourceNode.childNodes).forEach(child => {
+          Array.from(sourceElement.childNodes).forEach(child => {
             processNode(child, targetParent);
           });
           return;
@@ -143,17 +163,20 @@ function processNode(sourceNode, targetParent) {
       // Special case: UL/OL without LI children (often a bug in clipboard content)
       // This tweak should only happen when this element is the FIRST element in the received DOM.
       if (tagName === 'UL' || tagName === 'OL') {
-        const parent = sourceNode.parentNode;
+        const parent = sourceElement.parentNode;
         const isFirstElementInBody =
-          parent && parent.tagName === 'BODY' && Array.from(parent.children).find(c => !['META', 'STYLE'].includes(c.tagName.toUpperCase())) === sourceNode;
+          parent &&
+          'tagName' in parent &&
+          /** @type {HTMLElement} */ (parent).tagName === 'BODY' &&
+          Array.from(/** @type {HTMLElement} */ (parent).children).find(c => !['META', 'STYLE'].includes(c.tagName.toUpperCase())) === sourceElement;
 
         if (isFirstElementInBody) {
-          const hasLiChild = Array.from(sourceNode.childNodes).some(
-            child => child.nodeType === NodeGlobal.ELEMENT_NODE && child.tagName.toUpperCase() === 'LI'
+          const hasLiChild = Array.from(sourceElement.childNodes).some(
+            child => child.nodeType === NodeGlobal.ELEMENT_NODE && 'tagName' in child && /** @type {HTMLElement} */ (child).tagName.toUpperCase() === 'LI'
           );
           if (!hasLiChild) {
             // Unwrap: process children directly into targetParent
-            Array.from(sourceNode.childNodes).forEach(child => {
+            Array.from(sourceElement.childNodes).forEach(child => {
               processNode(child, targetParent);
             });
             return;
@@ -164,10 +187,11 @@ function processNode(sourceNode, targetParent) {
       const newElement = documentGlobal.createElement(tagName);
 
       // Copy allowed attributes
-      if (ALLOWED_ATTRIBUTES[tagName]) {
-        ALLOWED_ATTRIBUTES[tagName].forEach(attr => {
-          if (sourceNode.hasAttribute(attr)) {
-            newElement.setAttribute(attr, sourceNode.getAttribute(attr));
+      const allowedAttrs = ALLOWED_ATTRIBUTES[tagName];
+      if (allowedAttrs) {
+        allowedAttrs.forEach(attr => {
+          if (sourceElement.hasAttribute(attr)) {
+            newElement.setAttribute(attr, sourceElement.getAttribute(attr) || '');
           }
         });
       }
@@ -175,7 +199,7 @@ function processNode(sourceNode, targetParent) {
       targetParent.appendChild(newElement);
 
       // Process children
-      Array.from(sourceNode.childNodes).forEach(child => {
+      Array.from(sourceElement.childNodes).forEach(child => {
         processNode(child, newElement);
       });
     } else {
@@ -183,7 +207,7 @@ function processNode(sourceNode, targetParent) {
 
       if (!DANGEROUS_TAGS.includes(tagName) || tagName === 'BODY' || tagName === 'HTML') {
         // Unwrap safe-ish tags (like div, span, body, html)
-        Array.from(sourceNode.childNodes).forEach(child => {
+        Array.from(sourceElement.childNodes).forEach(child => {
           processNode(child, targetParent);
         });
       }
@@ -191,9 +215,16 @@ function processNode(sourceNode, targetParent) {
   }
 }
 
+/**
+ * @param {string} html
+ * @returns {string}
+ */
 export function removeStyleAttributes(html) {
   const doc = parseHTMLGlobal(html);
   const body = doc.body;
+  if (!body) {
+    return '';
+  }
 
   // Strip dangerous tags even when "Clean HTML" is off
   const DANGEROUS_TAGS = ['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED', 'LINK', 'META'];
