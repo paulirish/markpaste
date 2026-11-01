@@ -65,6 +65,27 @@ if (os.platform() === 'darwin') {
     const plainText = execSync('osascript -e "get (the clipboard as string)"', {encoding: 'utf8'}).trim();
     assert.strictEqual(plainText, markdownInput);
   });
+
+  test('markpaste cli: preserves non-ASCII plain text when launched without LANG (Spotlight env)', async () => {
+    const markdownInput = '# MD Test\n\nI hope you’re feeling 100° better — really!';
+
+    execSync('pbcopy', {
+      input: markdownInput,
+      env: {...process.env, LANG: 'en_US.UTF-8', LC_CTYPE: 'UTF-8'},
+    });
+
+    // Simulate Spotlight / launchd environment where LANG and LC_* are unset
+    execSync(`"${CLIP_TOOL}"`, {
+      encoding: 'utf8',
+      env: {PATH: process.env.PATH, HOME: process.env.HOME, USER: process.env.USER},
+    });
+
+    const plainText = execSync('pbpaste', {
+      encoding: 'utf8',
+      env: {...process.env, LANG: 'en_US.UTF-8', LC_CTYPE: 'UTF-8'},
+    }).trim();
+    assert.strictEqual(plainText, markdownInput);
+  });
 } else {
   test('markpaste cli: skipped on non-macOS', () => {
     // Pass

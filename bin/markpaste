@@ -87,7 +87,10 @@ function readHtmlFromClipboard() {
  * Reads the plain text flavor from the macOS clipboard.
  */
 function readTextFromClipboard() {
-  return execSync('pbpaste', { encoding: 'utf8' });
+  return execSync('pbpaste', {
+    encoding: 'utf8',
+    env: { ...process.env, LANG: 'en_US.UTF-8', LC_CTYPE: 'UTF-8' },
+  });
 }
 
 /**
