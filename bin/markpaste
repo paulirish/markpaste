@@ -10,10 +10,6 @@
  */
 
 import { execSync, spawnSync } from 'node:child_process';
-import { writeFileSync, unlinkSync } from 'node:fs';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-import os from 'node:os';
 
 import { convert, cleanHTML, isProbablyMarkdown } from '../src/index.js';
 import { marked } from 'marked';
@@ -32,40 +28,6 @@ function textToPreview(text, labelWidth = 0) {
 }
 
 /**
- * Decodes raw clipboard bytes, detecting the encoding from the content.
- * Tries UTF-8 first. On failure, checks for a <meta charset> declaration
- * and falls back to windows-1252 (the HTML spec default for undeclared charset).
- * @param {Buffer} buf
- * @returns {string}
- */
-function decodeClipboardHtml(buf) {
-  // Try UTF-8 first (most modern apps use it)
-  try {
-    return new TextDecoder('utf-8', {fatal: true}).decode(buf);
-  } catch {
-    // Not valid UTF-8 — detect charset from meta tags
-  }
-
-  // Parse enough of the bytes as ASCII to find a charset declaration
-  const head = buf.subarray(0, Math.min(buf.length, 2048)).toString('ascii');
-  const charsetMatch =
-    head.match(/<meta[^>]+charset=['"]?([^'"\s;>]+)/i) ||
-    head.match(/<meta[^>]+content=['"][^'"]*charset=([^'"\s;>]+)/i);
-  const declared = charsetMatch?.[1]?.toLowerCase();
-
-  if (declared) {
-    try {
-      return new TextDecoder(declared).decode(buf);
-    } catch {
-      // Unrecognized charset label, fall through
-    }
-  }
-
-  // HTML spec default when no charset is declared
-  return new TextDecoder('windows-1252').decode(buf);
-}
-
-/**
  * Reads the HTML flavor from the macOS clipboard.
  * Returns null if no HTML flavor is present.
  */
@@ -75,7 +37,7 @@ function readHtmlFromClipboard() {
     const hexData = execSync(`osascript -e '${script}'`, { encoding: 'utf8' }).trim();
     const match = hexData.match(/«data HTML([0-9A-F]*)»/i);
     if (match && match[1]) {
-      return decodeClipboardHtml(Buffer.from(match[1], 'hex'));
+      return Buffer.from(match[1], 'hex').toString('utf8');
     }
   } catch (e) {
     // Silently fail to return null
@@ -83,32 +45,27 @@ function readHtmlFromClipboard() {
   return null;
 }
 
+const UTF8_ENV = { ...process.env, LANG: 'en_US.UTF-8' };
+
 /**
  * Reads the plain text flavor from the macOS clipboard.
  */
 function readTextFromClipboard() {
-  return execSync('pbpaste', {
-    encoding: 'utf8',
-    env: { ...process.env, LANG: 'en_US.UTF-8', LC_CTYPE: 'UTF-8' },
-  });
+  return execSync('pbpaste', { encoding: 'utf8', env: UTF8_ENV });
 }
 
 /**
  * Sets both the HTML and Plain Text flavors on the macOS clipboard.
  */
 function setClipboard(html, markdown) {
-  const mdTmp = path.join(os.tmpdir(), `mp_md_${Date.now()}.txt`);
-  writeFileSync(mdTmp, markdown);
-
   const htmlHex = Buffer.from(html, 'utf8').toString('hex');
-  const appleScript = `
-    set theText to (read (POSIX file "${mdTmp}") as «class utf8»)
-    set the clipboard to {«class HTML»:«data HTML${htmlHex}», text:theText}
-  `;
+  const appleScript = `on run argv\nset the clipboard to {«class HTML»:«data HTML${htmlHex}», text:(item 1 of argv)}\nend run`;
 
-  const result = spawnSync('osascript', [], { input: appleScript, encoding: 'utf8' });
-  unlinkSync(mdTmp);
-
+  const result = spawnSync('osascript', ['-', markdown], {
+    input: appleScript,
+    encoding: 'utf8',
+    env: UTF8_ENV,
+  });
   if (result.status !== 0) {
     throw new Error(`osascript failed: ${result.stderr}`);
   }
