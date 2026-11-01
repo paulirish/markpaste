@@ -2,51 +2,57 @@
   "name": "markpaste",
   "version": "0.0.7",
   "description": "HTML and Markdown, perfected for pasting into documents, emails, and more. So isomorphic. lol.",
-  "main": "src/index.js",
+  "keywords": [
+    "clipboard",
+    "html",
+    "isomorphic",
+    "markdown"
+  ],
+  "license": "Apache-2.0",
+  "author": "Paul Irish <npm@paul.irish>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/paulirish/markpaste"
+  },
   "bin": {
     "markpaste": "bin/markpaste"
   },
+  "type": "module",
+  "main": "src/index.js",
   "scripts": {
     "start": "npx statikk --port 7025",
     "typecheck": "tsc --noEmit",
-    "format": "prettier --write \"**/*.{js,ts,json,md}\"",
+    "lint": "oxlint",
+    "format": "oxfmt",
+    "preflight": "pnpm typecheck && pnpm lint && pnpm test",
     "test": "pnpm run typecheck && pnpm run test:node && pnpm run test:web",
     "test:web": "playwright test",
     "test:node": "node --test test/node/**/*.test.js",
     "build:app": "./scripts/build-app.sh",
     "install:app": "pnpm run build:app && rm -rf /Applications/MarkPaste.app && mv dist/MarkPaste.app /Applications/ && mdimport /Applications/MarkPaste.app"
   },
-  "packageManager": "pnpm@10.22.0",
-  "keywords": [
-    "markdown",
-    "html",
-    "clipboard",
-    "isomorphic"
-  ],
-  "author": "Paul Irish <npm@paul.irish>",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/paulirish/markpaste"
-  },
-  "license": "Apache-2.0",
-  "type": "module",
-  "devDependencies": {
-    "@playwright/test": "^1.57.0",
-    "@types/prismjs": "^1.26.5",
-    "@types/turndown": "^5.0.6",
-    "prettier": "^3.7.3",
-    "statikk": "^2.2.2",
-    "typed-query-selector": "^2.12.0",
-    "typescript": "^5.9.3"
-  },
   "dependencies": {
     "@bjorn3/browser_wasi_shim": "^0.4.2",
-    "@types/node": "^25.0.3",
-    "linkedom": "^0.18.12",
-    "marked": "^17.0.1",
-    "turndown": "^7.2.2",
+    "linkedom": "^0.18.15",
+    "marked": "^18.1.2",
+    "turndown": "^7.2.4",
     "turndown-plugin-gfm": "^1.0.2"
   },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^26.6.6",
+    "@types/prismjs": "^1.26.6",
+    "@types/turndown": "^5.0.6",
+    "oxfmt": "^0.75.0",
+    "oxlint": "^1.90.0",
+    "statikk": "^3.1.0",
+    "typed-query-selector": "^2.12.3",
+    "typescript": "^7.0.2"
+  },
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@10.22.0",
   "pnpm": {
     "overrides": {
       "markpaste": "link:"

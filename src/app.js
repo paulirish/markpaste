@@ -1,6 +1,7 @@
 import {cleanHTML, removeStyleAttributes} from './cleaner.js';
 import {renderMarkdown} from './renderer.js';
 import {getConverter} from './converter.js';
+import {isProbablyMarkdown} from './index.js';
 
 /* bling.js + guaranteed and typed. Brand new in Nov 2025. */
 /**
@@ -290,13 +291,6 @@ async function handlePaste(e) {
   }, 2000);
 }
 
-function isProbablyMarkdown(text, hasHtml) {
-  if (hasHtml) return false;
-  const trimmed = text.trim();
-  if (trimmed.startsWith('<')) return false;
-  return true;
-}
-
 async function processContent(content, isMarkdown = null) {
   let htmlToShow;
   let markdownResults;
@@ -394,7 +388,7 @@ async function checkDiffs(results) {
 }
 
 async function updateRenderedPreviews() {
-  for (const [name, out] of Object.entries(outputs)) {
+  for (const [, out] of Object.entries(outputs)) {
     const markdown = out.code.textContent || '';
     await renderMarkdown(markdown, out.preview);
   }
@@ -417,7 +411,7 @@ function formatHTML(html) {
       if (pad != 0) {
         pad -= 1;
       }
-    } else if (node.match(/^<\w[^>]*[^\/]>.*$/)) {
+    } else if (node.match(/^<\w[^>]*[^/]>.*$/)) {
       indent = 1;
     } else {
       indent = 0;

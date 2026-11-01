@@ -15,7 +15,7 @@ if (isBrowser) {
   WasiShim = await import('@bjorn3/browser_wasi_shim');
 }
 
-/** @type {WasiShimT} */
+/** @type {typeof WasiShimT} */
 const {WASI, OpenFile, File, ConsoleStdout, PreopenDirectory} = WasiShim;
 
 const args = ['pandoc.wasm', '+RTS', '-H64m', '-RTS'];

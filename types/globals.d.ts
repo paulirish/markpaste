@@ -34,7 +34,7 @@ declare global {
   interface IdleDetector {
     addEventListener(
       type: 'change',
-      listener: (this: IdleDetector, ev: {userState: 'active' | 'idle'; screenState: 'locked' | 'unlocked'}) => unknown,
+      listener: (this: IdleDetector, ev: {userState: 'active' | 'idle'; screenState: 'locked' | 'unlocked'}) => void,
       options?: boolean | AddEventListenerOptions
     ): void;
     start(options: {threshold: number; signal?: AbortSignal}): Promise<void>;
@@ -42,7 +42,7 @@ declare global {
     userState: 'active' | 'idle';
   }
 
-  declare const IdleDetector: {
+  const IdleDetector: {
     new (): IdleDetector;
     requestPermission(): Promise<'granted' | 'denied'>;
   };

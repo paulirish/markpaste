@@ -65,7 +65,6 @@ test.describe('MarkPaste functionality', () => {
       inputArea.dispatchEvent(new Event('input', {bubbles: true}));
     }, html);
 
-    const outputCode = page.locator('#outputCodeTurndown');
     const htmlCode = page.locator('#htmlCode');
 
     // Initially, "Clean HTML" is checked

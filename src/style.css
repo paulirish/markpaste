@@ -164,12 +164,10 @@ main.vertical-layout {
   /* padding: 1rem 0; */
 }
 
-
 /* Input Panel Specifics */
 .input-panel {
   height: 100%;
 }
-
 
 /* 2-Column Grid */
 .two-column-grid {
@@ -225,7 +223,6 @@ main.vertical-layout {
   vertical-align: middle;
 }
 
-
 /* View Toggle Buttons */
 .view-toggle {
   display: flex;
@@ -265,7 +262,7 @@ main.vertical-layout {
   font-size: 70%;
 
   a:link {
-    color: var(--text-muted)
+    color: var(--text-muted);
   }
   a:link:hover {
     text-decoration-style: wavy;
@@ -277,7 +274,8 @@ main.vertical-layout {
     padding: revert;
   }
 
-  pre, code {
+  pre,
+  code {
     background: var(--secondary-bg);
     color: var(--text-color);
     padding: 0.2rem 0.4rem;
@@ -286,7 +284,6 @@ main.vertical-layout {
     font-size: 90%;
   }
 }
-
 
 [data-theme='dark'] .render-preview {
   background: #1e293b; /* darker bg for dark mode */
@@ -327,8 +324,12 @@ main.vertical-layout {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 /* App Footer */
@@ -340,7 +341,6 @@ main.vertical-layout {
   border-top: var(--glass-border);
   background: var(--panel-bg);
 }
-
 
 #themeToggle {
   background: transparent;
@@ -575,7 +575,6 @@ code[class*='language-'] {
   color: var(--text-color);
 }
 
-
 .logo {
   display: flex;
   align-items: center;
@@ -594,6 +593,3 @@ code[class*='language-'] {
     -webkit-text-fill-color: transparent;
   }
 }
-
-}
-

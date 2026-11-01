@@ -10,8 +10,9 @@
     "noEmit": true,
     "allowJs": true,
     "checkJs": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "strict": false,
+    "types": ["node"]
   },
-  "include": ["src/**/*.js", "types/**/*.d.ts", "test/**/*.ts", "test/**/*.js"],
-  "exclude": ["node_modules/linkedom"]
+  "exclude": ["node_modules", "dist"]
 }

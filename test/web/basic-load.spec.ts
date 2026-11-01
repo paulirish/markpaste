@@ -42,7 +42,6 @@ test('should load the page without errors or 404s', async ({page}) => {
 test('should paste HTML and update all 2 markdown outputs', async ({page}) => {
   await page.goto('http://127.0.0.1:7025/index.html');
 
-  const inputArea = page.locator('#inputArea');
   const testHtml = '<h1>Test Title</h1><p>Hello <strong>world</strong></p>';
 
   // Simulate paste event

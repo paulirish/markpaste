@@ -30,7 +30,7 @@ async function getTurndownConverter() {
 
   // Handle Math Blocks: e.g. <div class="math-block" data-math="P(x) = y">
   turndownService.addRule('mathBlock', {
-    filter: function (node, options) {
+    filter: function (node) {
       if (!node.getAttribute || !node.getAttribute('data-math')) return false;
       const className = node.getAttribute('class') || '';
       if (/math-inline/i.test(className)) return false;
@@ -38,15 +38,15 @@ async function getTurndownConverter() {
       const tag = node.nodeName.toUpperCase();
       return ['DIV', 'P', 'SECTION', 'BLOCKQUOTE'].includes(tag);
     },
-    replacement: function (content, node, options) {
+    replacement: function (content, node) {
       const math = (node.getAttribute('data-math') || '').trim();
       return '\n\n$$\n' + math + '\n$$\n\n';
-    }
+    },
   });
 
   // Handle Math Inline: e.g. <span class="math-inline" data-math="a + b">
   turndownService.addRule('mathInline', {
-    filter: function (node, options) {
+    filter: function (node) {
       if (!node.getAttribute || !node.getAttribute('data-math')) return false;
       const className = node.getAttribute('class') || '';
       if (/math-block/i.test(className)) return false;
@@ -54,12 +54,11 @@ async function getTurndownConverter() {
       const tag = node.nodeName.toUpperCase();
       return !['DIV', 'P', 'SECTION', 'BLOCKQUOTE'].includes(tag);
     },
-    replacement: function (content, node, options) {
+    replacement: function (content, node) {
       const math = (node.getAttribute('data-math') || '').trim();
       return '$' + math + '$';
-    }
+    },
   });
-
 
   return {
     convert: html => turndownService.turndown(html),
