@@ -111,7 +111,12 @@ if (os.platform() === 'darwin') {
   describe('MarkPaste.app bundle', () => {
     const appDir = path.join(REPO_ROOT, 'dist/MarkPaste.app');
     const appBin = path.join(appDir, 'Contents/MacOS/mp');
-    const spotlightEnv = {PATH: '/usr/bin:/bin', HOME: process.env.HOME, USER: process.env.USER};
+    const spotlightEnv = {
+      PATH: process.env.CI ? `/usr/bin:/bin:${path.dirname(process.execPath)}` : '/usr/bin:/bin',
+      HOME: process.env.HOME,
+      USER: process.env.USER,
+      ...(process.env.CI ? {MP_NO_DIALOG: '1'} : {}),
+    };
 
     test('builds valid universal signed bundle matching package.json version', () => {
       execSync('./scripts/build-app.sh', {cwd: REPO_ROOT, encoding: 'utf8'});
