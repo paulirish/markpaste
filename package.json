@@ -1,6 +1,6 @@
 {
   "name": "markpaste",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "HTML and Markdown, perfected for pasting into documents, emails, and more. So isomorphic. lol.",
   "keywords": [
     "clipboard",
