@@ -10,6 +10,7 @@
  */
 
 import { execSync, spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 
 import { cleanHTML, getConverter, isProbablyMarkdown } from '../src/index.js';
 import { marked } from 'marked';
@@ -71,35 +72,48 @@ function setClipboard(html, markdown) {
   }
 }
 
-async function main() {
-  try {
-    const rawHtml = readHtmlFromClipboard();
-    const hasHtmlFlavor = !!rawHtml;
-    const input = rawHtml || readTextFromClipboard();
+async function convertClipboardContent(rawHtml, rawText) {
+  const hasHtmlFlavor = !!rawHtml;
+  const input = rawHtml || rawText || '';
 
-    if (!input || input.trim() === '') {
-      console.error('No content found in clipboard.');
-      process.exit(1);
+  if (!input || input.trim() === '') {
+    throw new Error('No content found in clipboard.');
+  }
+
+  const isMarkdown = isProbablyMarkdown(input, hasHtmlFlavor);
+  let cleanedHtml;
+  let markdown;
+
+  if (isMarkdown) {
+    markdown = input;
+    cleanedHtml = await marked.parse(input);
+  } else {
+    cleanedHtml = cleanHTML(input);
+    const turndown = await getConverter('turndown');
+    markdown = turndown.convert(cleanedHtml);
+  }
+
+  return { input, isMarkdown, cleanedHtml, markdown };
+}
+
+async function main() {
+  const stdioMode = process.argv.includes('--stdio');
+  try {
+    if (stdioMode) {
+      const payload = JSON.parse(readFileSync(0, 'utf8'));
+      const { cleanedHtml, markdown } = await convertClipboardContent(payload.html || null, payload.text || '');
+      process.stdout.write(JSON.stringify({ html: cleanedHtml, markdown }));
+      return;
     }
 
-    const isMarkdown = isProbablyMarkdown(input, hasHtmlFlavor);
+    const rawHtml = readHtmlFromClipboard();
+    const rawText = rawHtml ? '' : readTextFromClipboard();
+    const { input, isMarkdown, cleanedHtml, markdown } = await convertClipboardContent(rawHtml, rawText);
 
     console.log('Read from clipboard:');
     const typeLabel = isMarkdown ? 'Markdown ' : 'HTML     ';
     const inputLabel = `${typeLabel}(${input.length} chars): `;
     console.log(`  ${inputLabel}${textToPreview(input, inputLabel.length + 2)}`);
-
-    let cleanedHtml;
-    let markdown;
-
-    if (isMarkdown) {
-      markdown = input;
-      cleanedHtml = await marked.parse(input);
-    } else {
-      cleanedHtml = cleanHTML(input);
-      const turndown = await getConverter('turndown');
-      markdown = turndown.convert(cleanedHtml);
-    }
 
     setClipboard(cleanedHtml, markdown);
 
@@ -110,9 +124,12 @@ async function main() {
     console.log('\nClipboard updated with:');
     console.log(`  ${mdLabel.padEnd(labelWidth - 2)}${textToPreview(markdown, labelWidth)}`);
     console.log(`  ${htmlLabel.padEnd(labelWidth - 2)}${textToPreview(cleanedHtml, labelWidth)}`);
-
   } catch (err) {
-    console.error('Error during conversion:', err);
+    if (stdioMode) {
+      console.error(err instanceof Error ? err.message : String(err));
+    } else {
+      console.error('Error during conversion:', err);
+    }
     process.exit(1);
   }
 }

@@ -89,6 +89,27 @@ if (os.platform() === 'darwin') {
     }).trim();
     assert.strictEqual(plainText, markdownInput);
   });
+
+  test('markpaste cli: --stdio converts HTML and Markdown via JSON', () => {
+    const htmlResult = JSON.parse(
+      execSync(`"${CLIP_TOOL}" --stdio`, {
+        input: JSON.stringify({html: '<h1>Hi</h1><p><b>Bold</b> — 100°</p>', text: null}),
+        encoding: 'utf8',
+      })
+    );
+    assert.strictEqual(htmlResult.markdown, '# Hi\n\n**Bold** — 100°');
+    assert.strictEqual(htmlResult.html.toLowerCase().includes('<b>bold</b>'), true);
+
+    const mdResult = JSON.parse(
+      execSync(`"${CLIP_TOOL}" --stdio`, {
+        input: JSON.stringify({html: null, text: '# Hi\n\n* item — you’re 100°'}),
+        encoding: 'utf8',
+      })
+    );
+    assert.strictEqual(mdResult.markdown, '# Hi\n\n* item — you’re 100°');
+    assert.strictEqual(mdResult.html.includes('<h1>Hi</h1>'), true);
+    assert.strictEqual(mdResult.html.includes('<li>item — you’re 100°</li>'), true);
+  });
 } else {
   test('markpaste cli: skipped on non-macOS', () => {
     // Pass

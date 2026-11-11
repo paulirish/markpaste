@@ -24,17 +24,12 @@ APP_VERSION=$(node -p "require('$REPO_ROOT/package.json').version")
 /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $APP_VERSION" "$CONTENTS_DIR/Info.plist"
 cp "$REPO_ROOT/mac/AppIcon.icns" "$RESOURCES_DIR/AppIcon.icns"
 
-# 1. Compile universal launcher binary (Apple Silicon + Intel)
+# 1. Compile universal Objective-C launcher binary (Apple Silicon + Intel)
 echo "Compiling launcher binary..."
-clang -O3 -arch arm64 -arch x86_64 "$REPO_ROOT/mac/launcher.c" -o "$MACOS_DIR/mp"
+clang -O3 -Wall -Wextra -fobjc-arc -arch arm64 -arch x86_64 -framework AppKit "$REPO_ROOT/mac/launcher.m" -o "$MACOS_DIR/mp"
 chmod +x "$MACOS_DIR/mp"
 
-# 2. Copy run.sh
-echo "Copying run.sh..."
-cp "$REPO_ROOT/mac/run.sh" "$RESOURCES_DIR/run.sh"
-chmod +x "$RESOURCES_DIR/run.sh"
-
-# 3. Bundle CLI and dependencies into a single tree-shaken ES module
+# 2. Bundle CLI and dependencies into a single tree-shaken ES module
 echo "Bundling CLI into markpaste.mjs..."
 "$REPO_ROOT/node_modules/.bin/esbuild" "$REPO_ROOT/bin/markpaste" \
   --bundle \
@@ -46,7 +41,7 @@ echo "Bundling CLI into markpaste.mjs..."
   --minify \
   --outfile="$RESOURCES_DIR/markpaste.mjs"
 
-# 4. Ad-hoc sign the app bundle
+# 3. Ad-hoc sign the app bundle
 echo "Signing app bundle (ad-hoc)..."
 codesign --force --deep --sign - "$APP_DIR"
 
