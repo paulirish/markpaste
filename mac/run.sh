@@ -16,15 +16,18 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Run markpaste and capture stderr
 ERR_FILE=$(mktemp)
+trap 'rm -f "$ERR_FILE"' EXIT
+
 node "$DIR/markpaste.mjs" "$@" 2>"$ERR_FILE"
 STATUS=$?
 
 if [ $STATUS -ne 0 ]; then
   ERR_MSG=$(cat "$ERR_FILE")
-  # Escape double quotes for AppleScript
-  ERR_MSG_ESC=$(echo "$ERR_MSG" | sed 's/"/\\"/g')
-  osascript -e "display dialog \"MarkPaste failed with error:\n\n$ERR_MSG_ESC\" buttons {\"OK\"} default button 1 with icon stop with title \"MarkPaste Error\""
+  osascript - "$ERR_MSG" <<'EOF'
+on run argv
+  display dialog ("MarkPaste failed with error:" & return & return & (item 1 of argv)) buttons {"OK"} default button 1 with icon stop with title "MarkPaste Error"
+end run
+EOF
 fi
 
-rm -f "$ERR_FILE"
 exit $STATUS

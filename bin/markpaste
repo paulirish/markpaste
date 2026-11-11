@@ -11,7 +11,7 @@
 
 import { execSync, spawnSync } from 'node:child_process';
 
-import { convert, cleanHTML, isProbablyMarkdown } from '../src/index.js';
+import { cleanHTML, getConverter, isProbablyMarkdown } from '../src/index.js';
 import { marked } from 'marked';
 
 /**
@@ -97,7 +97,8 @@ async function main() {
       cleanedHtml = await marked.parse(input);
     } else {
       cleanedHtml = cleanHTML(input);
-      markdown = await convert(input, { clean: true, isMarkdown: false });
+      const turndown = await getConverter('turndown');
+      markdown = turndown.convert(cleanedHtml);
     }
 
     setClipboard(cleanedHtml, markdown);
