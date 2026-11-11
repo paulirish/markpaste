@@ -26,7 +26,7 @@ cp "$REPO_ROOT/mac/AppIcon.icns" "$RESOURCES_DIR/AppIcon.icns"
 
 # 1. Compile universal Objective-C launcher binary (Apple Silicon + Intel)
 echo "Compiling launcher binary..."
-clang -O3 -Wall -Wextra -fobjc-arc -arch arm64 -arch x86_64 -framework AppKit "$REPO_ROOT/mac/launcher.m" -o "$MACOS_DIR/mp"
+clang -O3 -Wall -Wextra -Werror -fobjc-arc -mmacosx-version-min=12.0 -arch arm64 -arch x86_64 -framework AppKit "$REPO_ROOT/mac/launcher.m" -o "$MACOS_DIR/mp"
 chmod +x "$MACOS_DIR/mp"
 
 # 2. Bundle CLI and dependencies into a single tree-shaken ES module

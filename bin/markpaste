@@ -73,8 +73,8 @@ function setClipboard(html, markdown) {
 }
 
 async function convertClipboardContent(rawHtml, rawText) {
-  const hasHtmlFlavor = !!rawHtml;
-  const input = rawHtml || rawText || '';
+  const hasHtmlFlavor = !!(rawHtml && rawHtml.trim());
+  const input = hasHtmlFlavor ? rawHtml : rawText || '';
 
   if (!input || input.trim() === '') {
     throw new Error('No content found in clipboard.');

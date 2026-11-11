@@ -1,12 +1,12 @@
 #import <AppKit/AppKit.h>
-#import <limits.h>
-#import <mach-o/dyld.h>
+#import <signal.h>
 #import <stdio.h>
 #import <stdlib.h>
-#import <unistd.h>
 
 static void showError(NSString *title, NSString *message) {
-    fprintf(stderr, "%s: %s\n", [title UTF8String], [message UTF8String]);
+    NSString *safeTitle = title ?: @"MarkPaste Error";
+    NSString *safeMessage = message ?: @"";
+    fprintf(stderr, "%s: %s\n", safeTitle.UTF8String, safeMessage.UTF8String);
     if (getenv("MP_NO_DIALOG") != NULL) {
         return;
     }
@@ -17,27 +17,10 @@ static void showError(NSString *title, NSString *message) {
 
     NSAlert *alert = [[NSAlert alloc] init];
     alert.alertStyle = NSAlertStyleCritical;
-    alert.messageText = title;
-    alert.informativeText = message;
+    alert.messageText = safeTitle;
+    alert.informativeText = safeMessage;
     [alert addButtonWithTitle:@"OK"];
     [alert runModal];
-}
-
-static NSString *resolveBundleScriptPath(void) {
-    char exePath[PATH_MAX];
-    uint32_t size = sizeof(exePath);
-    if (_NSGetExecutablePath(exePath, &size) != 0) {
-        return nil;
-    }
-
-    char resolved[PATH_MAX];
-    if (realpath(exePath, resolved) == NULL) {
-        return nil;
-    }
-
-    NSString *exeStr = [NSFileManager.defaultManager stringWithFileSystemRepresentation:resolved length:strlen(resolved)];
-    NSString *contentsDir = [[exeStr stringByDeletingLastPathComponent] stringByDeletingLastPathComponent];
-    return [contentsDir stringByAppendingPathComponent:@"Resources/markpaste.mjs"];
 }
 
 static NSString *findNodeExecutable(void) {
@@ -86,24 +69,41 @@ static NSString *findNodeExecutable(void) {
 }
 
 static NSString *readHtmlFromPasteboard(NSPasteboard *pb) {
+    NSString *html = [pb stringForType:NSPasteboardTypeHTML];
+    if (html) {
+        return html;
+    }
     NSData *htmlData = [pb dataForType:NSPasteboardTypeHTML];
     if (htmlData.length == 0) {
         return nil;
     }
-    NSString *html = [[NSString alloc] initWithData:htmlData encoding:NSUTF8StringEncoding];
-    if (!html) {
-        html = [[NSString alloc] initWithData:htmlData encoding:NSWindowsCP1252StringEncoding];
-    }
-    return html;
+    html = [[NSString alloc] initWithData:htmlData encoding:NSUTF8StringEncoding];
+    return html ?: [[NSString alloc] initWithData:htmlData encoding:NSWindowsCP1252StringEncoding];
+}
+
+static NSDictionary<NSString *, NSString *> *buildChildEnvironment(NSString *nodePath) {
+    NSMutableDictionary<NSString *, NSString *> *env = [NSProcessInfo.processInfo.environment mutableCopy];
+    NSString *home = NSHomeDirectory();
+    NSArray<NSString *> *prefix = @[
+        [nodePath stringByDeletingLastPathComponent],
+        @"/opt/homebrew/bin",
+        @"/usr/local/bin",
+        [home stringByAppendingPathComponent:@".local/bin"],
+    ];
+    NSString *existingPath = env[@"PATH"];
+    NSString *joined = [prefix componentsJoinedByString:@":"];
+    env[@"PATH"] = existingPath.length > 0 ? [NSString stringWithFormat:@"%@:%@", joined, existingPath] : joined;
+    return env;
 }
 
 int main(int argc, const char *argv[]) {
     (void)argc;
     (void)argv;
+    signal(SIGPIPE, SIG_IGN);
 
     @autoreleasepool {
-        NSString *scriptPath = resolveBundleScriptPath();
-        if (!scriptPath || ![NSFileManager.defaultManager isReadableFileAtPath:scriptPath]) {
+        NSString *scriptPath = [NSBundle.mainBundle pathForResource:@"markpaste" ofType:@"mjs"];
+        if (!scriptPath) {
             showError(@"MarkPaste Error", @"Cannot find bundled markpaste.mjs inside the application bundle.");
             return 1;
         }
@@ -116,21 +116,12 @@ int main(int argc, const char *argv[]) {
         }
 
         NSPasteboard *pb = [NSPasteboard generalPasteboard];
-        NSCharacterSet *ws = [NSCharacterSet whitespaceAndNewlineCharacterSet];
         NSString *rawHtml = readHtmlFromPasteboard(pb);
-        BOOL hasHtml = rawHtml && [rawHtml stringByTrimmingCharactersInSet:ws].length > 0;
-        if (!hasHtml) rawHtml = nil;
-
-        NSString *rawText = hasHtml ? nil : [pb stringForType:NSPasteboardTypeString];
-        BOOL hasText = rawText && [rawText stringByTrimmingCharactersInSet:ws].length > 0;
-        if (!hasHtml && !hasText) {
-            showError(@"MarkPaste Error", @"No content found in clipboard.");
-            return 1;
-        }
+        NSString *rawText = [pb stringForType:NSPasteboardTypeString];
 
         NSDictionary *inputObj = @{
-            @"html": rawHtml ?: [NSNull null],
-            @"text": rawText ?: [NSNull null],
+            @"html": rawHtml ?: NSNull.null,
+            @"text": rawText ?: NSNull.null,
         };
         NSError *jsonError = nil;
         NSData *stdinData = [NSJSONSerialization dataWithJSONObject:inputObj options:0 error:&jsonError];
@@ -142,6 +133,7 @@ int main(int argc, const char *argv[]) {
         NSTask *task = [[NSTask alloc] init];
         task.executableURL = [NSURL fileURLWithPath:nodePath];
         task.arguments = @[scriptPath, @"--stdio"];
+        task.environment = buildChildEnvironment(nodePath);
 
         NSPipe *inPipe = [NSPipe pipe];
         NSPipe *outPipe = [NSPipe pipe];
@@ -164,27 +156,32 @@ int main(int argc, const char *argv[]) {
 
         dispatch_group_async(group, q, ^{
             NSFileHandle *writer = inPipe.fileHandleForWriting;
-            [writer writeData:stdinData];
-            [writer closeFile];
+            [writer writeData:stdinData error:nil];
+            [writer closeAndReturnError:nil];
         });
         dispatch_group_async(group, q, ^{
-            outData = [outPipe.fileHandleForReading readDataToEndOfFile];
+            outData = [outPipe.fileHandleForReading readDataToEndOfFileAndReturnError:nil];
         });
         dispatch_group_async(group, q, ^{
-            errData = [errPipe.fileHandleForReading readDataToEndOfFile];
+            errData = [errPipe.fileHandleForReading readDataToEndOfFileAndReturnError:nil];
         });
 
-        dispatch_group_wait(group, DISPATCH_TIME_FOREVER);
+        dispatch_time_t timeout = dispatch_time(DISPATCH_TIME_NOW, (int64_t)(15 * NSEC_PER_SEC));
+        if (dispatch_group_wait(group, timeout) != 0) {
+            [task terminate];
+            showError(@"MarkPaste Error", @"MarkPaste conversion timed out.");
+            return 1;
+        }
         [task waitUntilExit];
 
         if (task.terminationStatus != 0) {
-            NSString *errMsg = [[NSString alloc] initWithData:errData encoding:NSUTF8StringEncoding];
-            errMsg = [errMsg stringByTrimmingCharactersInSet:ws];
+            NSString *errMsg = errData ? [[NSString alloc] initWithData:errData encoding:NSUTF8StringEncoding] : nil;
+            errMsg = [errMsg stringByTrimmingCharactersInSet:NSCharacterSet.whitespaceAndNewlineCharacterSet];
             showError(@"MarkPaste Error", errMsg.length > 0 ? errMsg : @"MarkPaste failed with an unknown error.");
             return 1;
         }
 
-        NSDictionary *outputObj = [NSJSONSerialization JSONObjectWithData:outData options:0 error:&jsonError];
+        NSDictionary *outputObj = outData ? [NSJSONSerialization JSONObjectWithData:outData options:0 error:&jsonError] : nil;
         NSString *outHtml = [outputObj[@"html"] isKindOfClass:NSString.class] ? outputObj[@"html"] : nil;
         NSString *outMarkdown = [outputObj[@"markdown"] isKindOfClass:NSString.class] ? outputObj[@"markdown"] : nil;
         if (!outHtml || !outMarkdown) {
@@ -192,9 +189,11 @@ int main(int argc, const char *argv[]) {
             return 1;
         }
 
+        NSPasteboardItem *item = [[NSPasteboardItem alloc] init];
+        [item setString:outHtml forType:NSPasteboardTypeHTML];
+        [item setString:outMarkdown forType:NSPasteboardTypeString];
         [pb clearContents];
-        [pb setString:outHtml forType:NSPasteboardTypeHTML];
-        [pb setString:outMarkdown forType:NSPasteboardTypeString];
+        [pb writeObjects:@[item]];
     }
 
     return 0;
