@@ -1,6 +1,11 @@
 #!/bin/bash
-export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+export PATH="/opt/homebrew/bin:/usr/local/bin:$HOME/.volta/bin:$HOME/.local/share/mise/shims:$HOME/.asdf/shims:$HOME/.fnm/aliases/default/bin:$PATH"
 export LANG="${LANG:-en_US.UTF-8}"
+
+if ! command -v node >/dev/null 2>&1 && [ -d "$HOME/.nvm/versions/node" ]; then
+  NVM_NODE_DIR=$(ls -d "$HOME/.nvm/versions/node"/*/bin 2>/dev/null | sort -V | tail -n 1)
+  [ -n "$NVM_NODE_DIR" ] && export PATH="$NVM_NODE_DIR:$PATH"
+fi
 
 if ! command -v node >/dev/null 2>&1; then
   osascript -e 'display dialog "MarkPaste requires Node.js to be installed. Please install Node.js (e.g. via Homebrew or nodejs.org) and try again." buttons {"OK"} default button 1 with icon stop with title "Node.js Missing"'

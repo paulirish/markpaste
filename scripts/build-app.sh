@@ -18,13 +18,16 @@ mkdir -p "$MACOS_DIR"
 mkdir -p "$RESOURCES_DIR"
 touch "$DIST_DIR/.metadata_never_index"
 
-# Copy static mac assets
+# Copy static mac assets and sync version from package.json
 cp "$REPO_ROOT/mac/Info.plist" "$CONTENTS_DIR/Info.plist"
+APP_VERSION=$(node -p "require('$REPO_ROOT/package.json').version")
+/usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $APP_VERSION" "$CONTENTS_DIR/Info.plist"
+/usr/libexec/PlistBuddy -c "Set :CFBundleVersion $APP_VERSION" "$CONTENTS_DIR/Info.plist"
 cp "$REPO_ROOT/mac/AppIcon.icns" "$RESOURCES_DIR/AppIcon.icns"
 
-# 1. Compile launcher binary
+# 1. Compile universal launcher binary (Apple Silicon + Intel)
 echo "Compiling launcher binary..."
-clang -O3 "$REPO_ROOT/mac/launcher.c" -o "$MACOS_DIR/mp"
+clang -O3 -arch arm64 -arch x86_64 "$REPO_ROOT/mac/launcher.c" -o "$MACOS_DIR/mp"
 chmod +x "$MACOS_DIR/mp"
 
 # 2. Copy run.sh
@@ -43,16 +46,16 @@ cp -R "$REPO_ROOT/bin" "$TARGET_APP_DIR/bin"
 cp "$REPO_ROOT/package.json" "$TARGET_APP_DIR/package.json"
 cp "$REPO_ROOT/pnpm-lock.yaml" "$TARGET_APP_DIR/pnpm-lock.yaml"
 
-# 4. Install production dependencies inside the app bundle
+# 4. Install production dependencies flat (no store symlinks inside the .app bundle)
 echo "Installing production dependencies..."
 cd "$TARGET_APP_DIR"
+pnpm install --prod --ignore-workspace --frozen-lockfile --config.node-linker=hoisted
 
-# We use pnpm to install production dependencies.
-# --prod installs only production dependencies.
-# We also use --ignore-workspace to prevent pnpm from trying to link to workspace projects.
-pnpm install --prod --ignore-workspace
+# Clean up build-only metadata from the app bundle
+rm -rf pnpm-lock.yaml node_modules/.bin node_modules/.modules.yaml node_modules/.pnpm*
 
-# Clean up pnpm-lock.yaml from the app bundle to keep it clean
-rm -f pnpm-lock.yaml
+# 5. Ad-hoc sign the app bundle
+echo "Signing app bundle (ad-hoc)..."
+codesign --force --deep --sign - "$APP_DIR"
 
-echo "=== MarkPaste.app build completed! ==="
+echo "=== MarkPaste.app ($APP_VERSION) build completed! ==="

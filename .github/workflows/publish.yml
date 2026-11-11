@@ -32,3 +32,43 @@ jobs:
 
       - name: Publish to npm
         run: npm publish --provenance --access public --registry https://registry.npmjs.org/
+
+  release-app:
+    needs: publish
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.22.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Build and verify MarkPaste.app
+        run: |
+          pnpm run build:app
+          lipo -info dist/MarkPaste.app/Contents/MacOS/mp
+          codesign --verify --deep --strict --verbose=2 dist/MarkPaste.app
+          ditto -c -k --sequesterRsrc --keepParent dist/MarkPaste.app dist/MarkPaste.app.zip
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MarkPaste.app
+          path: dist/MarkPaste.app.zip
+
+      - name: Upload to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" dist/MarkPaste.app.zip --clobber
+          else
+            gh release create "$TAG" dist/MarkPaste.app.zip --title "$TAG" --generate-notes
+          fi

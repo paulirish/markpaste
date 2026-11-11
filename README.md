@@ -14,6 +14,45 @@ MarkPaste is an isomorphic tool that converts rich text to Markdown. It works se
 
 ## Usage
 
+### macOS App (`MarkPaste.app`)
+
+`MarkPaste.app` is a headless macOS launcher built for **Spotlight**, **Raycast**, or **Alfred**. Triggering it converts your clipboard in-place (with no window): HTML becomes clean Markdown + clean HTML, and plain Markdown becomes rich HTML + Markdown.
+
+Requires **Node.js >= 24**.
+
+- **Install via terminal** (skips browser quarantine):
+
+  ```bash
+  curl -fL https://github.com/paulirish/markpaste/releases/latest/download/MarkPaste.app.zip -o /tmp/MarkPaste.app.zip \
+    && rm -rf /Applications/MarkPaste.app \
+    && ditto -xk /tmp/MarkPaste.app.zip /Applications \
+    && mdimport /Applications/MarkPaste.app \
+    && rm /tmp/MarkPaste.app.zip
+  ```
+
+- **Install from [GitHub Releases](https://github.com/paulirish/markpaste/releases/latest):** download and unzip `MarkPaste.app.zip`, move `MarkPaste.app` into `/Applications`, and clear macOS quarantine (the app is ad-hoc signed, not notarized):
+
+  ```bash
+  xattr -cr /Applications/MarkPaste.app
+  ```
+
+- **Build & install from source:**
+
+  ```bash
+  pnpm run install:app
+  ```
+
+### CLI (macOS)
+
+Runs the same clipboard conversion from your terminal:
+
+```bash
+npx markpaste
+# or install globally
+pnpm add -g markpaste
+markpaste
+```
+
 ### Web Application
 
 1. **Open the app:** Run locally or host the `index.html`.
