@@ -8,7 +8,6 @@ APP_DIR="$DIST_DIR/MarkPaste.app"
 CONTENTS_DIR="$APP_DIR/Contents"
 MACOS_DIR="$CONTENTS_DIR/MacOS"
 RESOURCES_DIR="$CONTENTS_DIR/Resources"
-TARGET_APP_DIR="$RESOURCES_DIR/app"
 
 echo "=== Building MarkPaste.app in dist/ ==="
 
@@ -35,26 +34,19 @@ echo "Copying run.sh..."
 cp "$REPO_ROOT/mac/run.sh" "$RESOURCES_DIR/run.sh"
 chmod +x "$RESOURCES_DIR/run.sh"
 
-# 3. Prepare target app directory
-echo "Preparing app bundle contents..."
-rm -rf "$TARGET_APP_DIR"
-mkdir -p "$TARGET_APP_DIR"
+# 3. Bundle CLI and dependencies into a single tree-shaken ES module
+echo "Bundling CLI into markpaste.mjs..."
+"$REPO_ROOT/node_modules/.bin/esbuild" "$REPO_ROOT/bin/markpaste" \
+  --bundle \
+  --tree-shaking=true \
+  --platform=node \
+  --format=esm \
+  --target=node24 \
+  --external:./pandoc.js \
+  --minify \
+  --outfile="$RESOURCES_DIR/markpaste.mjs"
 
-# Copy source files
-cp -R "$REPO_ROOT/src" "$TARGET_APP_DIR/src"
-cp -R "$REPO_ROOT/bin" "$TARGET_APP_DIR/bin"
-cp "$REPO_ROOT/package.json" "$TARGET_APP_DIR/package.json"
-cp "$REPO_ROOT/pnpm-lock.yaml" "$TARGET_APP_DIR/pnpm-lock.yaml"
-
-# 4. Install production dependencies flat (no store symlinks inside the .app bundle)
-echo "Installing production dependencies..."
-cd "$TARGET_APP_DIR"
-pnpm install --prod --ignore-workspace --frozen-lockfile --config.node-linker=hoisted
-
-# Clean up build-only metadata from the app bundle
-rm -rf pnpm-lock.yaml node_modules/.bin node_modules/.modules.yaml node_modules/.pnpm*
-
-# 5. Ad-hoc sign the app bundle
+# 4. Ad-hoc sign the app bundle
 echo "Signing app bundle (ad-hoc)..."
 codesign --force --deep --sign - "$APP_DIR"
 

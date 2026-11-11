@@ -16,7 +16,7 @@ DIR="$(cd "$(dirname "$0")" && pwd)"
 
 # Run markpaste and capture stderr
 ERR_FILE=$(mktemp)
-node "$DIR/app/bin/markpaste" "$@" 2>"$ERR_FILE"
+node "$DIR/markpaste.mjs" "$@" 2>"$ERR_FILE"
 STATUS=$?
 
 if [ $STATUS -ne 0 ]; then
